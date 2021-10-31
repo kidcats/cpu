@@ -3,7 +3,7 @@
 use super::mmu::va2pa;
 use crate::hardware::memory::dram::*;
 use core::fmt;
-use std::{collections::{btree_set::Union}, default, mem::size_of, rc::Rc};
+use std::{collections::btree_set::Union, default, mem::size_of, rc::Rc};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -18,7 +18,6 @@ union RAX_REG {
     ax: u16,
     inner: RAX_Inner,
 }
-
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -187,7 +186,7 @@ union RIP_REG {
 enum OD {
     EMPTY,
     IMM(u64),
-    REG64(Rc<u64>),
+    REG64(u64,String),
     #[allow(non_camel_case_types)]
     M_IMM(u64),
     #[allow(non_camel_case_types)]
@@ -206,7 +205,6 @@ enum OD {
                 // #[allow(non_camel_case_types)]
                 // M_IMM_REG_REG_S(u64)
 }
-
 
 // 需要的指令类型
 #[allow(non_camel_case_types)]
@@ -234,80 +232,23 @@ struct Inst {
 
 // core 里面保存和所有的寄存器，和符号信息,符号可以先不管
 struct Core {
-    rax: Rc<u64>,
-    rbx: u64,
-    rcx: u64,
-    rdx: u64,
-    rsi: u64,
-    rdi: u64,
-    rbp: u64,
-    rsp: u64,
-    r8: u64,
-    r9: u64,
-    r10: u64,
-    r11: u64,
-    r12: u64,
-    r13: u64,
-    r14: u64,
-    r15: u64,
-    eax: u32,
-    ebx: u32,
-    ecx: u32,
-    edx: u32,
-    esi: u32,
-    edi: u32,
-    ebp: u32,
-    esp: u32,
-    ax: u16,
-    bx: u16,
-    cx: u16,
-    dx: u16,
-    si: u16,
-    di: u16,
-    bp: u16,
-    sp: u16,
-    al: u8,
-    ah: u8,
-    bl: u8,
-    bh: u8,
-    cl: u8,
-    ch: u8,
-    dl: u8,
-    dh: u8,
-    sil: u8,
-    sih: u8,
-    dil: u8,
-    dih: u8,
-    bpl: u8,
-    bph: u8,
-    spl: u8,
-    sph: u8,
-    r8d: u32,
-    r9d: u32,
-    r10d: u32,
-    r11d: u32,
-    r12d: u32,
-    r13d: u32,
-    r14d: u32,
-    r15d: u32,
-    r8w: u16,
-    r9w: u16,
-    r10w: u16,
-    r11w: u16,
-    r12w: u16,
-    r13w: u16,
-    r14w: u16,
-    r15w: u16,
-    r8b: u8,
-    r9b: u8,
-    r10b: u8,
-    r11b: u8,
-    r12b: u8,
-    r13b: u8,
-    r14b: u8,
-    r15b: u8,
-    rip: u64,
-    eip: u32,
+    rax: RAX_REG,
+    rbx: RBX_REG,
+    rcx: RCX_REG,
+    rdx: RDX_REG,
+    rsi: RSI_REG,
+    rdi: RDI_REG,
+    rbp: RBP_REG,
+    rsp: RSP_REG,
+    r8: R8_REG,
+    r9: R9_REG,
+    r10: R10_REG,
+    r11: R11_REG,
+    r12: R12_REG,
+    r13: R13_REG,
+    r14: R14_REG,
+    r15: R15_REG,
+    rip: RIP_REG,
 }
 
 impl Core {
@@ -367,80 +308,183 @@ impl Core {
         );
         unsafe {
             Core {
-                rax: { regs.0.rax },
-                rbx: { regs.1.rbx },
-                rcx: { regs.2.rcx },
-                rdx: { regs.3.rdx },
-                rsi: { regs.4.rsi },
-                rdi: { regs.5.rdi },
-                rbp: { regs.6.rbp },
-                rsp: { regs.7.rsp },
-                r8: { regs.8.r8 },
-                r9: { regs.9.r9 },
-                r10: { regs.10.r10 },
-                r11: { regs.11.r11 },
-                r12: { regs.12.r12 },
-                r13: { regs.13.r13 },
-                r14: { regs.14.r14 },
-                r15: { regs.15.r15 },
-                eax: { regs.0.eax },
-                ebx: { regs.1.ebx },
-                ecx: { regs.2.ecx },
-                edx: { regs.3.edx },
-                esi: { regs.4.esi },
-                edi: { regs.5.edi },
-                ebp: { regs.6.ebp },
-                esp: { regs.7.esp },
-                ax: { regs.0.ax },
-                bx: { regs.1.bx },
-                cx: { regs.2.cx },
-                dx: { regs.3.dx },
-                si: { regs.4.si },
-                di: { regs.5.di },
-                bp: { regs.6.bp },
-                sp: { regs.7.sp },
-                al: { regs.0.inner.al },
-                ah: { regs.0.inner.ah },
-                bl: { regs.1.inner.bl },
-                bh: { regs.1.inner.bh },
-                cl: { regs.2.inner.cl },
-                ch: { regs.2.inner.ch },
-                dl: { regs.3.inner.dl },
-                dh: { regs.3.inner.dh },
-                sil: { regs.4.inner.sil },
-                sih: { regs.4.inner.sih },
-                dil: { regs.5.inner.dil },
-                dih: { regs.5.inner.dih },
-                bpl: { regs.6.inner.bpl },
-                bph: { regs.6.inner.bph },
-                spl: { regs.7.inner.spl },
-                sph: { regs.7.inner.sph },
-                r8d: { regs.8.r8d },
-                r9d: { regs.9.r9d },
-                r10d: { regs.10.r10d },
-                r11d: { regs.11.r11d },
-                r12d: { regs.12.r12d },
-                r13d: { regs.13.r13d },
-                r14d: { regs.14.r14d },
-                r15d: { regs.15.r15d },
-                r8w: { regs.8.r8w },
-                r9w: { regs.9.r9w },
-                r10w: { regs.10.r10w },
-                r11w: { regs.11.r11w },
-                r12w: { regs.12.r12w },
-                r13w: { regs.13.r13w },
-                r14w: { regs.14.r14w },
-                r15w: { regs.15.r15w },
-                r8b: { regs.8.r8b },
-                r9b: { regs.9.r9b },
-                r10b: { regs.10.r10b },
-                r11b: { regs.11.r11b },
-                r12b: { regs.12.r12b },
-                r13b: { regs.13.r13b },
-                r14b: { regs.14.r14b },
-                r15b: { regs.15.r15b },
-                rip : {regs.16.rip},
-                eip : {regs.16.eip}
+                rax: { regs.0 },
+                rbx: { regs.1 },
+                rcx: { regs.2 },
+                rdx: { regs.3 },
+                rsi: { regs.4 },
+                rdi: { regs.5 },
+                rbp: { regs.6 },
+                rsp: { regs.7 },
+                r8: { regs.8 },
+                r9: { regs.9 },
+                r10: { regs.10 },
+                r11: { regs.11 },
+                r12: { regs.12 },
+                r13: { regs.13 },
+                r14: { regs.14 },
+                r15: { regs.15 },
+                rip: { regs.16 },
+            }
+        }
+    }
+    fn update_reg(&mut self, od: &str, value: u64) {
+        match od {
+            "rax" => self.rax.rax = value,
+            "eax" => self.rax.eax = value as u32,
+            "ax" => self.rax.ax = value as u16,
+            "ah" => self.rax.inner.ah = value as u8,
+            "al" => self.rax.inner.al = value as u8,
+            "rbx" => self.rbx.rbx = value,
+            "ebx" => self.rbx.ebx = value as u32,
+            "bx" => self.rbx.bx = value as u16,
+            "bh" => self.rbx.inner.bh = value as u8,
+            "bl" => self.rbx.inner.bl = value as u8,
+            "rcx" => self.rcx.rcx = value,
+            "ecx" => self.rcx.ecx = value as u32,
+            "cx" => self.rcx.cx = value as u16,
+            "ch" => self.rcx.inner.ch = value as u8,
+            "cl" => self.rcx.inner.cl = value as u8,
+            "rdx" => self.rax.rax = value,
+            "edx" => self.rax.eax = value as u32,
+            "dx" => self.rax.ax = value as u16,
+            "dh" => self.rax.inner.ah = value as u8,
+            "dl" => self.rax.inner.al = value as u8,
+            "rsi" => self.rsi.rsi = value,
+            "esi" => self.rsi.esi = value as u32,
+            "si" => self.rsi.si = value as u16,
+            "sih" => self.rsi.inner.sih = value as u8,
+            "sil" => self.rsi.inner.sil = value as u8,
+            "rdi" => self.rdi.rdi = value,
+            "edi" => self.rdi.edi = value as u32,
+            "di" => self.rdi.di = value as u16,
+            "dih" => self.rdi.inner.dih = value as u8,
+            "dil" => self.rdi.inner.dil = value as u8,
+            "rsp" => self.rsp.rsp = value,
+            "esp" => self.rsp.esp = value as u32,
+            "sp" => self.rsp.sp = value as u16,
+            "sph" => self.rsp.inner.sph = value as u8,
+            "spl" => self.rsp.inner.spl = value as u8,
+            "rbp" => self.rbp.rbp = value,
+            "ebp" => self.rbp.ebp = value as u32,
+            "bp" => self.rbp.bp = value as u16,
+            "bph" => self.rbp.inner.bph = value as u8,
+            "bpl" => self.rbp.inner.bpl = value as u8,
+            "r8" => self.r8.r8 = value,
+            "r8d" => self.r8.r8d = value as u32,
+            "r8w" => self.r8.r8w = value as u16,
+            "r8b" => self.r8.r8b = value as u8,
+            "r9" => self.r9.r9 = value,
+            "r9d" => self.r9.r9d = value as u32,
+            "r9w" => self.r9.r9w = value as u16,
+            "r9b" => self.r9.r9b = value as u8,
+            "r10" => self.r10.r10 = value,
+            "r10d" => self.r10.r10d = value as u32,
+            "r10w" => self.r10.r10w = value as u16,
+            "r10b" => self.r10.r10b = value as u8,
+            "r11" => self.r11.r11 = value,
+            "r11d" => self.r11.r11d = value as u32,
+            "r11w" => self.r11.r11w = value as u16,
+            "r11b" => self.r11.r11b = value as u8,
+            "r12" => self.r12.r12 = value,
+            "r12d" => self.r12.r12d = value as u32,
+            "r12w" => self.r12.r12w = value as u16,
+            "r12b" => self.r12.r12b = value as u8,
+            "r13" => self.r13.r13 = value,
+            "r13d" => self.r13.r13d = value as u32,
+            "r13w" => self.r13.r13w = value as u16,
+            "r13b" => self.r13.r13b = value as u8,
+            "r14" => self.r14.r14 = value,
+            "r14d" => self.r14.r14d = value as u32,
+            "r14w" => self.r14.r14w = value as u16,
+            "r14b" => self.r14.r14b = value as u8,
+            "r15" => self.r15.r15 = value,
+            "r15d" => self.r15.r15d = value as u32,
+            "r15w" => self.r15.r15w = value as u16,
+            "r15b" => self.r15.r15b = value as u8,
+            "rip" => self.rip.rip = value,
+            "eip" => self.rip.eip = value as u32,
+            _ => panic!("bad reg name"),
+        }
+    }
+    fn get_reg_value(&self, name: &str) -> Option<u64> {
+        unsafe {
+            match name {
+                "%rax" => Some(self.rax.rax),
+                "%rbx" => Some(self.rbx.rbx),
+                "%rcx" => Some(self.rcx.rcx),
+                "%rdx" => Some(self.rdx.rdx),
+                "%rsi" => Some(self.rsi.rsi),
+                "%rdi" => Some(self.rdi.rdi),
+                "%rbp" => Some(self.rbp.rbp),
+                "%rsp" => Some(self.rsp.rsp),
+                "%eax" => Some(self.rax.eax as u64),
+                "%ebx" => Some(self.rbx.ebx as u64),
+                "%ecx" => Some(self.rcx.ecx as u64),
+                "%edx" => Some(self.rdx.edx as u64),
+                "%esi" => Some(self.rsi.esi as u64),
+                "%edi" => Some(self.rdi.edi as u64),
+                "%ebp" => Some(self.rbp.ebp as u64),
+                "%esp" => Some(self.rsp.esp as u64),
+                "%ax" => Some(self.rax.ax as u64),
+                "%bx" => Some(self.rbx.bx as u64),
+                "%cx" => Some(self.rcx.cx as u64),
+                "%dx" => Some(self.rdx.dx as u64),
+                "%si" => Some(self.rsi.si as u64),
+                "%di" => Some(self.rdi.di as u64),
+                "%bp" => Some(self.rbp.bp as u64),
+                "%sp" => Some(self.rsp.sp as u64),
+                "%al" => Some(self.rax.inner.al as u64),
+                "%ah" => Some(self.rax.inner.ah as u64),
+                "%bl" => Some(self.rbx.inner.bl as u64),
+                "%bh" => Some(self.rbx.inner.bh as u64),
+                "%cl" => Some(self.rcx.inner.cl as u64),
+                "%ch" => Some(self.rcx.inner.ch as u64),
+                "%dl" => Some(self.rdx.inner.dl as u64),
+                "%dh" => Some(self.rdx.inner.dh as u64),
+                "%sil" => Some(self.rsi.inner.sil as u64),
+                "%sih" => Some(self.rsi.inner.sih as u64),
+                "%dil" => Some(self.rdi.inner.dil as u64),
+                "%dih" => Some(self.rdi.inner.dih as u64),
+                "%bpl" => Some(self.rbp.inner.bpl as u64),
+                "%bph" => Some(self.rbp.inner.bph as u64),
+                "%spl" => Some(self.rsp.inner.spl as u64),
+                "%sph" => Some(self.rsp.inner.sph as u64),
+                "%r8" => Some(self.r8.r8 as u64),
+                "%r9" => Some(self.r9.r9),
+                "%r10" => Some(self.r10.r10),
+                "%r11" => Some(self.r11.r11),
+                "%r12" => Some(self.r12.r12),
+                "%r13" => Some(self.r13.r13),
+                "%r14" => Some(self.r14.r14),
+                "%r15" => Some(self.r15.r15),
+                "%r8d" => Some(self.r8.r8d as u64),
+                "%r9d" => Some(self.r9.r9d as u64),
+                "%r10d" => Some(self.r10.r10d as u64),
+                "%r11d" => Some(self.r11.r11d as u64),
+                "%r12d" => Some(self.r12.r12d as u64),
+                "%r13d" => Some(self.r13.r13d as u64),
+                "%r14d" => Some(self.r14.r14d as u64),
+                "%r15d" => Some(self.r15.r15d as u64),
+                "%r8w" => Some(self.r8.r8w as u64),
+                "%r9w" => Some(self.r9.r9w as u64),
+                "%r10w" => Some(self.r10.r10w as u64),
+                "%r11w" => Some(self.r11.r11w as u64),
+                "%r12w" => Some(self.r12.r12w as u64),
+                "%r13w" => Some(self.r13.r13w as u64),
+                "%r14w" => Some(self.r14.r14w as u64),
+                "%r15w" => Some(self.r15.r15w as u64),
+                "%r8b" => Some(self.r8.r8b as u64),
+                "%r9b" => Some(self.r9.r9b as u64),
+                "%r10b" => Some(self.r10.r10b as u64),
+                "%r11b" => Some(self.r11.r11b as u64),
+                "%r12b" => Some(self.r12.r12b as u64),
+                "%r13b" => Some(self.r13.r13b as u64),
+                "%r14b" => Some(self.r14.r14b as u64),
+                "%r15b" => Some(self.r15.r15b as u64),
+                "%rip" => Some(self.rip.rip as u64),
+                "%eip" => Some(self.rip.eip as u64),
+                default => Some(0 as u64),
             }
         }
     }
@@ -462,88 +506,6 @@ fn parse_inst_type(str: &str) -> Option<INST_TYPE> {
         "jmp" => Some(INST_TYPE::JMP),
         default => None,
     }
-}
-
-// 将寄存器的值解析出来 要带%
-fn reg2value(str: &str, core: &Core) -> Option<u64> {
-    let od = match str.as_ref() {
-        "%rax" => Some(core.rax),
-        "%rbx" => Some(core.rbx),
-        "%rcx" => Some(core.rcx),
-        "%rdx" => Some(core.rdx),
-        "%rsi" => Some(core.rsi),
-        "%rdi" => Some(core.rdi),
-        "%rbp" => Some(core.rbp),
-        "%rsp" => Some(core.rsp),
-        "%eax" => Some(core.eax as u64),
-        "%ebx" => Some(core.ebx as u64),
-        "%ecx" => Some(core.ecx as u64),
-        "%edx" => Some(core.edx as u64),
-        "%esi" => Some(core.esi as u64),
-        "%edi" => Some(core.edi as u64),
-        "%ebp" => Some(core.ebp as u64),
-        "%esp" => Some(core.esp as u64),
-        "%ax" => Some(core.ax as u64),
-        "%bx" => Some(core.bx as u64),
-        "%cx" => Some(core.cx as u64),
-        "%dx" => Some(core.dx as u64),
-        "%si" => Some(core.si as u64),
-        "%di" => Some(core.di as u64),
-        "%bp" => Some(core.bp as u64),
-        "%sp" => Some(core.sp as u64),
-        "%al" => Some(core.al as u64),
-        "%ah" => Some(core.ah as u64),
-        "%bl" => Some(core.bl as u64),
-        "%bh" => Some(core.bh as u64),
-        "%cl" => Some(core.cl as u64),
-        "%ch" => Some(core.ch as u64),
-        "%dl" => Some(core.dl as u64),
-        "%dh" => Some(core.dh as u64),
-        "%sil" => Some(core.sil as u64),
-        "%sih" => Some(core.sih as u64),
-        "%dil" => Some(core.dil as u64),
-        "%dih" => Some(core.dih as u64),
-        "%bpl" => Some(core.bpl as u64),
-        "%bph" => Some(core.bph as u64),
-        "%spl" => Some(core.spl as u64),
-        "%sph" => Some(core.sph as u64),
-        "%r8" => Some(core.r8),
-        "%r9" => Some(core.r9),
-        "%r10" => Some(core.r10),
-        "%r11" => Some(core.r11),
-        "%r12" => Some(core.r12),
-        "%r13" => Some(core.r13),
-        "%r14" => Some(core.r14),
-        "%r15" => Some(core.r15),
-        "%r8d" => Some(core.r8d as u64),
-        "%r9d" => Some(core.r9d as u64),
-        "%r10d" => Some(core.r10d as u64),
-        "%r11d" => Some(core.r11d as u64),
-        "%r12d" => Some(core.r12d as u64),
-        "%r13d" => Some(core.r13d as u64),
-        "%r14d" => Some(core.r14d as u64),
-        "%r15d" => Some(core.r15d as u64),
-        "%r8w" => Some(core.r8w as u64),
-        "%r9w" => Some(core.r9w as u64),
-        "%r10w" => Some(core.r10w as u64),
-        "%r11w" => Some(core.r11w as u64),
-        "%r12w" => Some(core.r12w as u64),
-        "%r13w" => Some(core.r13w as u64),
-        "%r14w" => Some(core.r14w as u64),
-        "%r15w" => Some(core.r15w as u64),
-        "%r8b" => Some(core.r8b as u64),
-        "%r9b" => Some(core.r9b as u64),
-        "%r10b" => Some(core.r10b as u64),
-        "%r11b" => Some(core.r11b as u64),
-        "%r12b" => Some(core.r12b as u64),
-        "%r13b" => Some(core.r13b as u64),
-        "%r14b" => Some(core.r14b as u64),
-        "%r15b" => Some(core.r15b as u64),
-        "%rip" => Some(core.rip as u64),
-        "%eip" => Some(core.eip as u64),
-        default => Some(0 as u64),
-    };
-    return od;
 }
 
 // 将十六进制或者十进制的的str解析成对应的i64
@@ -785,17 +747,18 @@ fn parse_mm_ist(str: &str, core: &Core) -> u64 {
     } else {
         hex_str2u(scal.as_str())
     };
-    let temp =
-        reg2value(r1.as_str(), core).unwrap() + reg2value(r2.as_str(), core).unwrap() * scal_temp;
+    let temp = core.get_reg_value(r1.as_str()).unwrap()
+        + core.get_reg_value(r2.as_str()).unwrap() * scal_temp;
+    println!("temp : {}", &temp);
     let temp2 = hex_str2i(imm.as_str());
     icalu(temp2, temp)
 }
 
-// 解析操作数的类型
+// 解析操作数的类型,获取对应的数值，有可能是地址，有可能是纯数值
 fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
     if str == "" {
         return Some(OD::EMPTY);
-    }else if str.contains("(") {
+    } else if str.contains("(") {
         // 如果有括号，则一定是内存型，取该地址的上的值返回过去
         // 内存型一共有9种，但是大体上还是 a(reg1,reg2,scal)这种类型
         return Some(OD::M_REG(parse_mm_ist(str, core)));
@@ -804,81 +767,7 @@ fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
         return Some(OD::IMM(hex_str2u(str)));
     } else if str.starts_with("%") {
         // 以%开头，则是寄存器型，要取寄存器的值
-        let od = match str.as_ref() {
-            "%rax" => Some(OD::REG(core.rax)),
-            "%rbx" => Some(OD::REG(core.rbx)),
-            "%rcx" => Some(OD::REG(core.rcx)),
-            "%rdx" => Some(OD::REG(core.rdx)),
-            "%rsi" => Some(OD::REG(core.rsi)),
-            "%rdi" => Some(OD::REG(core.rdi)),
-            "%rbp" => Some(OD::REG(core.rbp)),
-            "%rsp" => Some(OD::REG(core.rsp)),
-            "%eax" => Some(OD::REG(core.eax as u64)),
-            "%ebx" => Some(OD::REG(core.ebx as u64)),
-            "%ecx" => Some(OD::REG(core.ecx as u64)),
-            "%edx" => Some(OD::REG(core.edx as u64)),
-            "%esi" => Some(OD::REG(core.esi as u64)),
-            "%edi" => Some(OD::REG(core.edi as u64)),
-            "%ebp" => Some(OD::REG(core.ebp as u64)),
-            "%esp" => Some(OD::REG(core.esp as u64)),
-            "%ax" => Some(OD::REG(core.ax as u64)),
-            "%bx" => Some(OD::REG(core.bx as u64)),
-            "%cx" => Some(OD::REG(core.cx as u64)),
-            "%dx" => Some(OD::REG(core.dx as u64)),
-            "%si" => Some(OD::REG(core.si as u64)),
-            "%di" => Some(OD::REG(core.di as u64)),
-            "%bp" => Some(OD::REG(core.bp as u64)),
-            "%sp" => Some(OD::REG(core.sp as u64)),
-            "%al" => Some(OD::REG(core.al as u64)),
-            "%ah" => Some(OD::REG(core.ah as u64)),
-            "%bl" => Some(OD::REG(core.bl as u64)),
-            "%bh" => Some(OD::REG(core.bh as u64)),
-            "%cl" => Some(OD::REG(core.cl as u64)),
-            "%ch" => Some(OD::REG(core.ch as u64)),
-            "%dl" => Some(OD::REG(core.dl as u64)),
-            "%dh" => Some(OD::REG(core.dh as u64)),
-            "%sil" => Some(OD::REG(core.sil as u64)),
-            "%sih" => Some(OD::REG(core.sih as u64)),
-            "%dil" => Some(OD::REG(core.dil as u64)),
-            "%dih" => Some(OD::REG(core.dih as u64)),
-            "%bpl" => Some(OD::REG(core.bpl as u64)),
-            "%bph" => Some(OD::REG(core.bph as u64)),
-            "%spl" => Some(OD::REG(core.spl as u64)),
-            "%sph" => Some(OD::REG(core.sph as u64)),
-            "%r8" => Some(OD::REG(core.r8)),
-            "%r9" => Some(OD::REG(core.r9)),
-            "%r10" => Some(OD::REG(core.r10)),
-            "%r11" => Some(OD::REG(core.r11)),
-            "%r12" => Some(OD::REG(core.r12)),
-            "%r13" => Some(OD::REG(core.r13)),
-            "%r14" => Some(OD::REG(core.r14)),
-            "%r15" => Some(OD::REG(core.r15)),
-            "%r8d" => Some(OD::REG(core.r8d as u64)),
-            "%r9d" => Some(OD::REG(core.r9d as u64)),
-            "%r10d" => Some(OD::REG(core.r10d as u64)),
-            "%r11d" => Some(OD::REG(core.r11d as u64)),
-            "%r12d" => Some(OD::REG(core.r12d as u64)),
-            "%r13d" => Some(OD::REG(core.r13d as u64)),
-            "%r14d" => Some(OD::REG(core.r14d as u64)),
-            "%r15d" => Some(OD::REG(core.r15d as u64)),
-            "%r8w" => Some(OD::REG(core.r8w as u64)),
-            "%r9w" => Some(OD::REG(core.r9w as u64)),
-            "%r10w" => Some(OD::REG(core.r10w as u64)),
-            "%r11w" => Some(OD::REG(core.r11w as u64)),
-            "%r12w" => Some(OD::REG(core.r12w as u64)),
-            "%r13w" => Some(OD::REG(core.r13w as u64)),
-            "%r14w" => Some(OD::REG(core.r14w as u64)),
-            "%r15w" => Some(OD::REG(core.r15w as u64)),
-            "%r8b" => Some(OD::REG(core.r8b as u64)),
-            "%r9b" => Some(OD::REG(core.r9b as u64)),
-            "%r10b" => Some(OD::REG(core.r10b as u64)),
-            "%r11b" => Some(OD::REG(core.r11b as u64)),
-            "%r12b" => Some(OD::REG(core.r12b as u64)),
-            "%r13b" => Some(OD::REG(core.r13b as u64)),
-            "%r14b" => Some(OD::REG(core.r14b as u64)),
-            "%r15b" => Some(OD::REG(core.r15b as u64)),
-            default => None,
-        };
+        let od = Some(OD::REG64(core.get_reg_value(str).unwrap(),str.to_string()));
         return od;
     } else {
         //是最后一种类型 立即数值型，取地址的值
@@ -887,59 +776,64 @@ fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
 }
 
 // 更新pc
-fn update_pc(core:&mut Core){
-    core.rip = core.rip + 4 * 64;
+fn update_pc(core: &mut Core) {
+    unsafe {
+        core.rip.rip = core.rip.rip + 4 * 64;
+    }
 }
 
 // mov 指令 src dst,od有很多种格式，如果是立即数形式则直接把数字交给dst就好，但是如何判断是哪个还是很有问题的
-fn mov_handler(src: OD, dst: OD,core :&mut Core) {
+fn mov_handler(src: OD, dst: OD, core: &mut Core) {
     let src_value = match src {
-        OD::EMPTY => {panic!("bad parm in mov handler")},
+        OD::EMPTY => {
+            panic!("bad parm in mov handler")
+        }
         OD::IMM(value) => value,
         // OD::REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
-        OD::REG(addr) => addr,
-        OD::M_IMM(addr) => addr,
-        OD::M_REG(addr) => addr,
+        OD::REG64(value,_) => value,
+        OD::M_IMM(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+        OD::M_REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
     };
-    println!("{:x}",src_value);
-    // match dst {
-    //     OD::EMPTY => {
-    //         panic!("bad dst type in mov inst")
-    //     }
-    //     OD::IMM(_) => {
-    //         panic!("bad dst type in mov inst")
-    //     }
-    //     // OD::REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
-    //     OD::REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
-    //     OD::M_IMM(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
-    //     OD::M_REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
-    // };
-    // dst = &mut OD::REG(*src_value);
+    println!("{:x}", src_value);
+    match dst {
+        OD::EMPTY => {
+            panic!("bad dst type in mov inst")
+        }
+        OD::IMM(_) => {
+            panic!("bad dst type in mov inst")
+        }
+        // OD::REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
+        OD::REG64(value,string) => {
+            println!("{}",string.as_str());
+            core.update_reg(&string.as_str()[1..], value)},
+        OD::M_IMM(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
+        OD::M_REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
+    };
     update_pc(core);
 }
 
 // push 指令
-fn push_handler(src:OD,core:&mut Core){
-    let src_value = match src{
-        OD::REG(addr) => {
-            read64bits_dram(va2pa(addr).unwrap()).unwrap()
-        },
-        _ => { panic!("bad src in push handler") }
-    };
-    core.rsp -= 8;
-    write64bits_dram(va2pa(core.rsp).unwrap(), src_value);
-    update_pc(core);
-}
+// fn push_handler(src: OD, core: &mut Core) {
+//     let src_value = match src {
+//         OD::REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+//         _ => {
+//             panic!("bad src in push handler")
+//         }
+//     };
+//     core.rsp -= 8;
+//     write64bits_dram(va2pa(core.rsp).unwrap(), src_value);
+//     update_pc(core);
+// }
 
 // 执行指令
-fn oper_inst(inst: Inst,core:&mut Core) {
+fn oper_inst(inst: Inst, core: &mut Core) {
     match &inst.inst_type {
         INST_TYPE::MOV => {
-            mov_handler(inst.src, inst.dst,core);
+            mov_handler(inst.src, inst.dst, core);
         }
         INST_TYPE::PUSH => {
-            push_handler(inst.src, core);
-        },
+            // push_handler(inst.src, core);
+        }
         INST_TYPE::POP => todo!(),
         INST_TYPE::LEAVE => todo!(),
         INST_TYPE::CALL => todo!(),
@@ -961,10 +855,10 @@ mod tests {
 
     #[test]
     fn test() {
-        let f = RAX_REG{
-            rax : 0x1234abcdff11ff11
+        let f = RAX_REG {
+            rax: 0x1234abcdff11ff11,
         };
-        unsafe{
+        unsafe {
             let e = f.eax;
         }
     }
@@ -972,16 +866,16 @@ mod tests {
     #[test]
     fn test_parse_mm_num() {
         let mut core = Core::new();
-        core.eax = 0x100;
-        core.ecx = 0x1;
-        core.edx = 0x3;
+        core.rax.eax = 0x100;
+        core.rcx.ecx = 0x1;
+        core.rdx.edx = 0x3;
         let str = "9(%eax,%edx)";
         // println!("{:x}",parse_mm_ist(str, &core));
         assert_eq!(0x100, parse_mm_ist("(%eax)", &core));
         assert_eq!(0x104, parse_mm_ist("4(%eax)", &core));
         assert_eq!(0x10c, parse_mm_ist(" 9( %eax , %edx)", &core));
         assert_eq!(0x108, parse_mm_ist("260(%ecx,%edx)", &core));
-        assert_eq!(0x100, parse_mm_ist("0xfc(,%ecx,4)", &core));
+        assert_eq!(0xfc + 4, parse_mm_ist("0xfc(,%ecx,4)", &core));
         assert_eq!(0x10c, parse_mm_ist("(%eax,%edx,4)", &core));
     }
 
@@ -1034,38 +928,38 @@ mod tests {
         ];
         let inst1 = insts_vec[11];
         let z: Vec<&str> = inst1.split(&[' ', ','][..]).collect();
-        let z : Vec<&str> = z.into_iter().filter(|&s|{
-            s != ""
-        }).collect();
+        let z: Vec<&str> = z.into_iter().filter(|&s| s != "").collect();
         let mut oper_str = "";
         let mut src_str = "";
         let mut dst_str = "";
-        match z.len(){
-            1=>{
+        match z.len() {
+            1 => {
                 oper_str = z[0];
-            },
-            2=>{
+            }
+            2 => {
                 oper_str = z[0];
                 src_str = z[1];
-            },
-            3=>{
+            }
+            3 => {
                 oper_str = z[0];
                 src_str = z[1];
                 dst_str = z[2];
-            },
-            _=>{panic!("error in parse full inst str")}
+            }
+            _ => {
+                panic!("error in parse full inst str")
+            }
         }
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         let mut core = Core::new();
-        core.rax = 0xabcd;
-        core.rbx = 0x8000670;
-        core.rcx = 0x8000670;
-        core.rdx = 0x12340000;
-        core.rsi = 0x7ffffffee208;
-        core.rdi = 0x1;
-        core.rbp = 0x7ffffffee110;
-        core.rsp = 0x7ffffffee0f0;
-        core.rip = 0x4002c0; 
+        core.rax.rax = 0xabcd;
+        core.rbx.rbx = 0x8000670;
+        core.rcx.rcx = 0x8000670;
+        core.rdx.rdx = 0x12340000;
+        core.rsi.rsi = 0x7ffffffee208;
+        core.rdi.rdi = 0x1;
+        core.rbp.rbp = 0x7ffffffee110;
+        core.rsp.rsp = 0x7ffffffee0f0;
+        core.rip.rip = 0x4002c0;
         write64bits_dram(va2pa(0x7ffffffee110).unwrap(), 0x0000000000000000); // rbp
         write64bits_dram(va2pa(0x7ffffffee108).unwrap(), 0x0000000000000000);
         write64bits_dram(va2pa(0x7ffffffee100).unwrap(), 0x0000000012340000);
@@ -1076,9 +970,9 @@ mod tests {
             src: parse_od_type(src_str, &core).unwrap(),
             dst: parse_od_type(dst_str, &core).unwrap(),
         };
-        println!("{:?},{:?},{:?}",inst.inst_type,inst.src,inst.dst);
+        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
         // 现在是拿到了解析好的指令，开始执行
-        oper_inst(inst,&mut core);
+        oper_inst(inst, &mut core);
         // // push执行结束后对比两者寄存器的变化
         // assert_eq!(0xabcd, core.rax);
         // assert_eq!(0x8000670, core.rbx);

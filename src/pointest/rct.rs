@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -13,54 +13,53 @@ union RAX_REG {
     ax: u16,
     inner: RAX_Inner,
 }
-
 struct Core {
-    rax: Rc<u64>,
-    eax: Rc<u32>,
-    ax: Rc<u16>,
-    al: Rc<u8>,
-    ah: Rc<u8>,
+    rax: RAX_REG,
 }
 
 impl Core {
-    fn new() -> Core{
-        let x = RAX_REG {
+    fn new() -> Self {
+        let mut x = RAX_REG {
             rax: 0x0000_0000_0000_0000,
         };
-        unsafe{
-            Core{
-                rax:Rc::new(x.rax),
-                eax:Rc::new(x.eax),
-                ax:Rc::new(x.ax),
-                al:Rc::new(x.inner.al),
-                ah:Rc::new(x.inner.ah)
-            }
-        }
-        
+        unsafe { Core { rax: x } }
     }
+
+    fn update_reg(&mut self, od: &str, value: u64) {
+        match od {
+            "rax" => self.rax.rax = value,
+            "eax" => self.rax.eax = value as u32,
+            "ax" => self.rax.ax = value as u16,
+            "ah" => self.rax.inner.ah = value as u8,
+            "al" => self.rax.inner.al = value as u8,
+            _ => panic!("bad reg name"),
+        }
+    }
+
+    
 }
-enum OD{
-    REG64(RefCell<u64>),
+enum OD<'a> {
+    REG64(&'a u64),
     REG32(Rc<u32>),
     REG16(Rc<u16>),
     REG8(Rc<u8>),
 }
 
-
-fn change_reg(src:OD,dst:OD){
+fn change_reg(src: OD, dst: OD) {
     match src {
         OD::REG64(value) => {
-            match dst{
+            match dst {
                 OD::REG64(dst_value) => {
-                    dst_value = Rc::clone(&value);
-                },
+                    // *dst_value.borrow_mut() = *(*value).borrow();
+                    // println!("zzzz{:x}",*(*dst_value).borrow());
+                }
                 OD::REG32(_) => todo!(),
                 OD::REG16(_) => {
                     todo!();
-                },
+                }
                 OD::REG8(_) => todo!(),
             }
-        },
+        }
         OD::REG32(_) => todo!(),
         OD::REG16(_) => todo!(),
         OD::REG8(_) => todo!(),
@@ -74,8 +73,15 @@ mod test {
 
     #[test]
     fn do_work() {
-        let core = Core::new();
-        change_reg(OD::REG64(core.rax), OD::REG64(Rc::new(0x1111_1111_1111_1111)));
-        println!("core {:?}",core.eax);
+        let mut core = Core::new();
+        let x = 0x0000_ffff_0000_f0f2u64;
+        core.update_reg("rax", x);
+        unsafe {
+            assert_eq!(core.rax.rax, 0x0000_ffff_0000_f0f2u64);
+            assert_eq!(core.rax.eax, 0x0000_f0f2u32);
+            assert_eq!(core.rax.ax,  0xf0f2u16);
+            assert_eq!(core.rax.inner.ah, 0xf0u8);
+            assert_eq!(core.rax.inner.al, 0xf2u8);
+        }
     }
 }

@@ -1,0 +1,4 @@
+"r15" => self.r15.r15 = value,
+            "r15d" => self.r15.r15d = value as u32,
+            "r15w" => self.r15.r15w = value as u16,
+            "r15b" => self.r15.r15b = value as u8,
