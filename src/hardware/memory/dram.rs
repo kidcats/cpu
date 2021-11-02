@@ -1,4 +1,4 @@
-pub const PHYSICAL_MEMORY_SPACE: usize = 1024;
+pub const PHYSICAL_MEMORY_SPACE: usize = 10000;
 pub static mut pm: [u8; PHYSICAL_MEMORY_SPACE] = [0; PHYSICAL_MEMORY_SPACE];
 
 /**
@@ -42,6 +42,7 @@ pub fn write_inst_dram(pa_addr: u64, str: &str) {
     for i in 0..24 {
         if i < str.len() {
             let char = str.as_bytes()[i];
+            println!("{}",char);
             unsafe {
                 pm[pa_addr as usize + i] = char;
             }
@@ -83,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_write_inst(){
-        let isnt = "mov %rsp %rbp";
+        let isnt = "callq  0x5574d795f020";
         write_inst_dram(va2pa(0x5574d795f020).unwrap(), isnt);
         let result = read_inst_dram(va2pa(0x5574d795f020).unwrap()).unwrap();
         assert_eq!(isnt,result);

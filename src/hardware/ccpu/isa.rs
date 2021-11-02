@@ -497,7 +497,7 @@ fn parse_inst_type(str: &str) -> Option<INST_TYPE> {
         "push" => Some(INST_TYPE::PUSH),
         "pop" => Some(INST_TYPE::POP),
         "leave" => Some(INST_TYPE::LEAVE),
-        "call" => Some(INST_TYPE::CALL),
+        "callq" => Some(INST_TYPE::CALL),
         "ret" => Some(INST_TYPE::RET),
         "add" => Some(INST_TYPE::ADD),
         "sub" => Some(INST_TYPE::SUB),
@@ -860,6 +860,22 @@ fn add_handler(src: OD, dst: OD, core: &mut Core) {
     };
 }
 
+// call 其实就是将结果给rip
+fn call_handler(src: OD, core: &mut Core) {
+    let src_value = match src {
+        OD::EMPTY => panic!("bad src in call inst"),
+        OD::IMM(value) => value,
+        OD::REG64(value, _) => value,
+        OD::M_IMM(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+        OD::M_REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+    };
+    core.update_reg("rip", src_value);
+    // 同时栈+8
+    unsafe {
+        core.rsp.rsp -= 8;
+    }
+}
+
 // 执行指令
 fn oper_inst(inst: Inst, core: &mut Core) {
     match &inst.inst_type {
@@ -873,7 +889,7 @@ fn oper_inst(inst: Inst, core: &mut Core) {
             pop_handler(inst.src, core);
         }
         INST_TYPE::LEAVE => todo!(),
-        INST_TYPE::CALL => todo!(),
+        INST_TYPE::CALL => call_handler(inst.src, core),
         INST_TYPE::RET => todo!(),
         INST_TYPE::ADD => todo!(),
         INST_TYPE::SUB => todo!(),
@@ -887,6 +903,7 @@ fn oper_inst(inst: Inst, core: &mut Core) {
 fn callq_handler(core: &mut Core) {}
 
 fn str_to_inst(str: &str, core: &mut Core) -> Inst {
+    println!("str to inst : {}", &str);
     let z: Vec<&str> = str.split(&[' ', ','][..]).collect();
     let z: Vec<&str> = z.into_iter().filter(|&s| s != "").collect();
     let mut oper_str = "";
@@ -993,7 +1010,7 @@ mod tests {
             "retq",                    // 10
             "mov    %rdx,%rsi",        // 11
             "mov    %rax,%rdi",        // 12
-            "callq  0x00400000",       // 13
+            "callq  $0x00400000",       // 13
             "mov    %rax,-0x8(%rbp)",  // 14
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
@@ -1039,7 +1056,68 @@ mod tests {
         }
     }
 
-    
+    #[test]
+    fn test_call() {
+        let insts_vec = vec![
+            "push   %rbp",             // 0  5574d795f020
+            "mov    %rsp,%rbp",        // 1  5574d795f0e0
+            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
+            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
+            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
+            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
+            "add    %rdx,%rax",        // 6  5574D795F4A0
+            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
+            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
+            "pop    %rbp",             // 9  5574D795F6E0
+            "retq",                    // 10 5574D795F7A0
+            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
+            "mov    %rax,%rdi",        // 12 5574d795f920
+            "callq  $0x5574d795f020",   // 13 5574d795f9e0
+            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
+        ];
+        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
+        write_inst(insts_vec, 0x5574d795f020);
+        let mut core = Core::new();
+        core.rax.rax = 0x12340000;
+        core.rbx.rbx = 0x0;
+        core.rcx.rcx = 0x8000660;
+        core.rdx.rdx = 0xabcd;
+        core.rsi.rsi = 0xabcd;
+        core.rdi.rdi = 0x12340000;
+        core.rbp.rbp = 0x7ffffffee210;
+        core.rsp.rsp = 0x7ffffffee1f0;
+        core.rip.rip = 0x5574d795f9e0;
+        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
+        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
+        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
+        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
+
+        // ************************从这开始 准备好了数据*************
+
+        // 取指 译码 执行
+        let mut pa_addr = 0;
+        unsafe {
+            pa_addr = va2pa(core.rip.rip).unwrap();
+            println!("{}", pa_addr);
+        }
+        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
+
+        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
+        // 现在是拿到了解析好的指令，开始执行
+        oper_inst(inst, &mut core);
+
+        unsafe {
+            assert_eq!(0x12340000, core.rax.rax);
+            assert_eq!(0x0, core.rbx.rbx);
+            assert_eq!(0x8000660, core.rcx.rcx);
+            assert_eq!(0xabcd, core.rdx.rdx);
+            assert_eq!(0xabcd, core.rsi.rsi);
+            assert_eq!(0x12340000, core.rdi.rdi);
+            assert_eq!(0x7ffffffee210, core.rbp.rbp);
+            assert_eq!(0x7ffffffee1e8, core.rsp.rsp);
+            assert_eq!(0x5574d795f020, core.rip.rip);
+        }
+    }
 
     #[test]
     fn test_inst_cycle() {
