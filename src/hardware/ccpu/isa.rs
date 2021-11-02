@@ -3,7 +3,7 @@
 use super::mmu::va2pa;
 use crate::hardware::memory::dram::*;
 use core::fmt;
-use std::{collections::btree_set::Union, default, mem::size_of, rc::Rc, string};
+use std::{collections::btree_set::Union, default, fmt::Result, mem::size_of, rc::Rc, string};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -775,10 +775,17 @@ fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
     }
 }
 
+// 将指令写入硬盘
+fn write_inst(insts: Vec<&str>, pa: u64) {
+    for num in 0..insts.len() {
+        write_inst_dram(va2pa(pa + (0xc0 * num) as u64).unwrap(), insts[num]);
+    }
+}
+
 // 更新pc
 fn update_pc(core: &mut Core) {
     unsafe {
-        core.rip.rip = core.rip.rip + 4 * 64;
+        core.rip.rip = core.rip.rip + 0xc0;
     }
 }
 
@@ -804,8 +811,8 @@ fn mov_handler(src: OD, dst: OD, core: &mut Core) {
         }
         // OD::REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
         OD::REG64(value, string) => {
-            println!("{}", string.as_str());
-            core.update_reg(&string.as_str()[1..], value)
+            println!("{}", &string.as_str()[1..]);
+            core.update_reg(&string.as_str()[1..], src_value)
         }
         OD::M_IMM(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
         OD::M_REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
@@ -830,13 +837,12 @@ fn push_handler(src: OD, core: &mut Core) {
 }
 
 // 与push 相反 ，mov %(rsp) %rbp rsp += 8
-fn pop_handler(src:OD,core: &mut Core) {
+fn pop_handler(src: OD, core: &mut Core) {
     unsafe {
         let src_value = read64bits_dram(va2pa(core.rsp.rsp).unwrap());
         match src {
             OD::REG64(value, string) => core.update_reg(string.as_str(), value),
-            _ => panic!("bad pop inst")
-
+            _ => panic!("bad pop inst"),
         }
         core.rsp.rsp += 8;
     }
@@ -844,7 +850,7 @@ fn pop_handler(src:OD,core: &mut Core) {
 }
 
 // add
-fn add_handler(src: OD,dst: OD,core: &mut Core){
+fn add_handler(src: OD, dst: OD, core: &mut Core) {
     let src_value = match src {
         OD::EMPTY => panic!("bad inst src in add"),
         OD::IMM(_) => 0,
@@ -864,7 +870,7 @@ fn oper_inst(inst: Inst, core: &mut Core) {
             push_handler(inst.src, core);
         }
         INST_TYPE::POP => {
-            pop_handler(inst.src,core);
+            pop_handler(inst.src, core);
         }
         INST_TYPE::LEAVE => todo!(),
         INST_TYPE::CALL => todo!(),
@@ -878,39 +884,37 @@ fn oper_inst(inst: Inst, core: &mut Core) {
     }
 }
 
-fn callq_handler(core: &mut Core){
+fn callq_handler(core: &mut Core) {}
 
-}
-
-fn str_to_inst(str: &str,core: &mut Core) -> Inst{
+fn str_to_inst(str: &str, core: &mut Core) -> Inst {
     let z: Vec<&str> = str.split(&[' ', ','][..]).collect();
-        let z: Vec<&str> = z.into_iter().filter(|&s| s != "").collect();
-        let mut oper_str = "";
-        let mut src_str = "";
-        let mut dst_str = "";
-        match z.len() {
-            1 => {
-                oper_str = z[0];
-            }
-            2 => {
-                oper_str = z[0];
-                src_str = z[1];
-            }
-            3 => {
-                oper_str = z[0];
-                src_str = z[1];
-                dst_str = z[2];
-            }
-            _ => {
-                panic!("error in parse full inst str")
-            }
+    let z: Vec<&str> = z.into_iter().filter(|&s| s != "").collect();
+    let mut oper_str = "";
+    let mut src_str = "";
+    let mut dst_str = "";
+    match z.len() {
+        1 => {
+            oper_str = z[0];
         }
-        let inst = Inst {
-            inst_type: parse_inst_type(oper_str).unwrap(),
-            src: parse_od_type(src_str, &core).unwrap(),
-            dst: parse_od_type(dst_str, &core).unwrap(),
-        };
-        return inst
+        2 => {
+            oper_str = z[0];
+            src_str = z[1];
+        }
+        3 => {
+            oper_str = z[0];
+            src_str = z[1];
+            dst_str = z[2];
+        }
+        _ => {
+            panic!("error in parse full inst str")
+        }
+    }
+    let inst = Inst {
+        inst_type: parse_inst_type(oper_str).unwrap(),
+        src: parse_od_type(src_str, &core).unwrap(),
+        dst: parse_od_type(dst_str, &core).unwrap(),
+    };
+    return inst;
 }
 
 #[cfg(test)]
@@ -972,7 +976,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add() {
+    fn test_mov() {
         // 立即数$，寄存器 %reg，内存 % 三种取,其中，立即数取得是数本身，不需要去地址取
         // 想要的效果就是一条指令，根据空格分成三份，分别进行解析，解析出mov,src地址，dst地址
         let insts_vec = vec![
@@ -993,6 +997,7 @@ mod tests {
             "mov    %rax,-0x8(%rbp)",  // 14
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
+        write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x12340000;
         core.rbx.rbx = 0x0;
@@ -1007,52 +1012,34 @@ mod tests {
         write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
         write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
         write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
-        for i in (0..0){
-            let ist = insts_vec[11];
-            let inst = str_to_inst(ist, &mut core);
-            oper_inst(inst, &mut core);
+
+        // ************************从这开始 准备好了数据*************
+        // 取指 译码 执行
+        let mut pa_addr = 0;
+        unsafe {
+            pa_addr = va2pa(core.rip.rip).unwrap();
+            // println!("{}",pa_addr);
         }
-        // println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
+        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
+
+        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
         // 现在是拿到了解析好的指令，开始执行
-        
-        // // push执行结束后对比两者寄存器的变化
-        unsafe {
-            assert_eq!(0x12340000, core.rax.rax);
-            assert_eq!(0x0, core.rbx.rbx);
-            assert_eq!(0x8000660, core.rcx.rcx);
-            assert_eq!(0xabcd, core.rdx.rdx);
-            assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x12340000, core.rdi.rdi);
-            assert_eq!(0x7ffffffee210, core.rbp.rbp);
-            assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
-            assert_eq!(0x5574d795f9e0, core.rip.rip);
-        }
-        let ist = insts_vec[12];
-        let inst = str_to_inst(ist, &mut core);
         oper_inst(inst, &mut core);
+        // // mov执行结束后对比两者寄存器的变化
         unsafe {
             assert_eq!(0x12340000, core.rax.rax);
             assert_eq!(0x0, core.rbx.rbx);
             assert_eq!(0x8000660, core.rcx.rcx);
             assert_eq!(0xabcd, core.rdx.rdx);
             assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x12340000, core.rdi.rdi);
+            assert_eq!(0x1, core.rdi.rdi);
             assert_eq!(0x7ffffffee210, core.rbp.rbp);
             assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
-            assert_eq!(0x5574d795f9e0, core.rip.rip);
+            assert_eq!(0x5574d795f920, core.rip.rip);
         }
-        // unsafe {
-        //     assert_eq!(0xabcd, core.rax.rax);
-        //     assert_eq!(0x8000670, core.rbx.rbx);
-        //     assert_eq!(0x8000670, core.rcx.rcx);
-        //     assert_eq!(0x12340000, core.rdx.rdx);
-        //     assert_eq!(0x12340000, core.rsi.rsi);
-        //     assert_eq!(0x1, core.rdi.rdi);
-        //     assert_eq!(0x7ffffffee110, core.rbp.rbp);
-        //     assert_eq!(0x7ffffffee0f0, core.rsp.rsp);
-        //     assert_eq!(0x400300, core.rip.rip);
-        // }
     }
+
+    
 
     #[test]
     fn test_inst_cycle() {

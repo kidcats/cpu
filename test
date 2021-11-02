@@ -1,20 +1,20 @@
 
 
-            "push   %rbp",             // 0
-            "mov    %rsp,%rbp",        // 1
-            "mov    %rdi,-0x18(%rbp)", // 2
-            "mov    %rsi,-0x20(%rbp)", // 3
-            "mov    -0x18(%rbp),%rdx", // 4
-            "mov    -0x20(%rbp),%rax", // 5
-            "add    %rdx,%rax",        // 6
-            "mov    %rax,-0x8(%rbp)",  // 7
-            "mov    -0x8(%rbp),%rax",  // 8
-            "pop    %rbp",             // 9
-            "retq",                    // 10
-            "mov    %rdx,%rsi",        // 11
-            "mov    %rax,%rdi",        // 12
-            "callq  0x00400000",       // 13
-            "mov    %rax,-0x8(%rbp)",  // 14
+            "push   %rbp",             // 0  5574d795f020
+            "mov    %rsp,%rbp",        // 1  5574d795f0e0
+            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
+            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
+            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
+            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
+            "add    %rdx,%rax",        // 6  5574D795F4A0
+            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
+            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
+            "pop    %rbp",             // 9  5574D795F6E0
+            "retq",                    // 10 5574D795F7A0
+            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
+            "mov    %rax,%rdi",        // 12 5574d795f920
+            "callq  0x00400000",       // 13 5574d795f9e0
+            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
 
 rax =         12340000  rbx =                0  rcx =          8000660  
 rdx =             abcd  rsi =     7ffffffee2f8  rdi =                1  
@@ -112,9 +112,9 @@ rbp =     7ffffffee210  rsp =     7ffffffee1e8   rip =     5574d795f020
 0x00007ffffffee1a8 :                0
 0x00007ffffffee1a0 :                0
     push   %rbp
-rax =         12340000  rbx =                0  rcx =          8000660  rdx =             abcd
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee210  rsp =     7ffffffee1e0
-rip =     5574d795f0e0
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =             abcd  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1e0  rip =     5574d795f0e0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -136,9 +136,9 @@ rip =     5574d795f0e0
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    %rsp,%rbp
-rax =         12340000  rbx =                0  rcx =          8000660  rdx =             abcd
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f1a0
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =             abcd  rsi =             abcd  rdi =         12340000
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f1a0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -160,9 +160,9 @@ rip =     5574d795f1a0
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    %rdi,-0x18(%rbp)
-rax =         12340000  rbx =                0  rcx =          8000660  rdx =             abcd
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f260
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =             abcd  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f260
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -184,9 +184,9 @@ rip =     5574d795f260
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    %rsi,-0x20(%rbp)
-rax =         12340000  rbx =                0  rcx =          8000660  rdx =             abcd
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f320
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =             abcd  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f320
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -208,9 +208,9 @@ rip =     5574d795f320
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    -0x18(%rbp),%rdx
-rax =         12340000  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f3e0
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f3e0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -232,9 +232,9 @@ rip =     5574d795f3e0
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    -0x20(%rbp),%rax
-rax =             abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f4a0
+rax =             abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f4a0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -256,9 +256,9 @@ rip =     5574d795f4a0
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     add    %rdx,%rax
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f560
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f560
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -280,9 +280,9 @@ rip =     5574d795f560
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    %rax,-0x8(%rbp)
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f620
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f620
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -304,9 +304,9 @@ rip =     5574d795f620
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     mov    -0x8(%rbp),%rax
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee1e0  rsp =     7ffffffee1e0
-rip =     5574d795f6e0
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee1e0  rsp =     7ffffffee1e0  rip =     5574d795f6e0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
 0x00007ffffffee220 :                0
@@ -328,9 +328,9 @@ rip =     5574d795f6e0
 0x00007ffffffee1a0 :                0
 0x00007ffffffee198 :                0
     pop   %rbp
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee210  rsp =     7ffffffee1e8
-rip =     5574d795f7a0
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1e8  rip =     5574d795f7a0
 0x00007ffffffee238 :                0
 0x00007ffffffee230 :                0
 0x00007ffffffee228 :                0
@@ -352,9 +352,9 @@ rip =     5574d795f7a0
 0x00007ffffffee1a8 :                0
 0x00007ffffffee1a0 :                0
     retq
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee210  rsp =     7ffffffee1f0
-rip =     5574d795faa0
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1f0  rip =     5574d795faa0
 0x00007ffffffee240 :                0
 0x00007ffffffee238 :                0
 0x00007ffffffee230 :                0
@@ -376,9 +376,9 @@ rip =     5574d795faa0
 0x00007ffffffee1b0 :                0
 0x00007ffffffee1a8 :                0
     mov    %rax,-0x8(%rbp)
-rax =         1234abcd  rbx =                0  rcx =          8000660  rdx =         12340000
-rsi =             abcd  rdi =         12340000  rbp =     7ffffffee210  rsp =     7ffffffee1f0
-rip =     5574d795fb60
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1f0  rip =     5574d795fb60
 0x00007ffffffee240 :                0
 0x00007ffffffee238 :                0
 0x00007ffffffee230 :                0
