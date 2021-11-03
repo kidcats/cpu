@@ -842,7 +842,7 @@ fn pop_handler(src: OD, core: &mut Core) {
     unsafe {
         let src_value = read64bits_dram(va2pa(core.rsp.rsp).unwrap());
         match src {
-            OD::REG64(value, string) => core.update_reg(string.as_str(), value),
+            OD::REG64(value, string) => core.update_reg(&string.as_str()[1..], value),
             _ => panic!("bad pop inst"),
         }
         core.rsp.rsp += 8;
@@ -884,7 +884,10 @@ fn call_handler(src: OD, core: &mut Core) {
     // 同时栈+8
     unsafe {
         core.rsp.rsp -= 8;
-        write64bits_dram(va2pa(core.rsp.rsp).unwrap(), core.get_reg_value("rip").unwrap());
+        write64bits_dram(
+            va2pa(core.rsp.rsp).unwrap(),
+            core.get_reg_value("rip").unwrap(),
+        );
     }
     core.update_reg("rip", src_value);
     // 将下一条指令写入的内容写入
@@ -918,8 +921,11 @@ fn oper_inst(inst: Inst, core: &mut Core) {
 fn retq_handler(core: &mut Core) {
     unsafe {
         let va_addr = core.rsp.rsp;
-        println!("rsp value {:x}",va_addr);
-        println!("rsp value {:x}",read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
+        println!("rsp value {:x}", va_addr);
+        println!(
+            "rsp value {:x}",
+            read64bits_dram(va2pa(va_addr).unwrap()).unwrap()
+        );
         core.update_reg("rip", read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
         core.update_reg("rsp", va_addr + 8);
     }
@@ -1183,8 +1189,10 @@ mod tests {
         write64bits_dram(va2pa(0x00007ffffffee1e0).unwrap(), 0x7ffffffee210);
 
         // ************************从这开始 准备好了数据*************
-        println!("init value {:x}",read64bits_dram(va2pa(0x00007ffffffee1e8).unwrap()).unwrap());
-
+        println!(
+            "init value {:x}",
+            read64bits_dram(va2pa(0x00007ffffffee1e8).unwrap()).unwrap()
+        );
 
         // 取指 译码 执行
         let mut pa_addr = 0;
@@ -1236,6 +1244,72 @@ mod tests {
         core.rax.rax = 0x1234abcd;
         core.rbx.rbx = 0x0;
         core.rcx.rcx = 0x8000660;
+        core.rdx.rdx = 0xabcd;
+        core.rsi.rsi = 0x7ffffffee2f8;
+        core.rdi.rdi = 0x1;
+        core.rbp.rbp = 0x7ffffffee210;
+        core.rsp.rsp = 0x7ffffffee1f0;
+        core.rip.rip = 0x5574d795f860;
+        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
+        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd); // rbp
+        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
+        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
+
+        // ************************从这开始 准备好了数据*************
+        for i in 0..15 {
+            // 循环从rip地址中取数据
+            // 取指 译码 执行
+            let mut pa_addr = 0;
+            unsafe {
+                pa_addr = va2pa(core.rip.rip).unwrap();
+                println!("{}", pa_addr);
+            }
+            let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
+
+            println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
+            // 现在是拿到了解析好的指令，开始执行
+            oper_inst(inst, &mut core);
+        }
+
+        unsafe {
+            assert_eq!(0x1234abcd, core.rax.rax);
+            assert_eq!(0x0, core.rbx.rbx);
+            assert_eq!(0x8000660, core.rcx.rcx);
+            assert_eq!(0x12340000, core.rdx.rdx);
+            assert_eq!(0xabcd, core.rsi.rsi);
+            assert_eq!(0x12340000, core.rdi.rdi);
+            assert_eq!(0x7ffffffee210, core.rbp.rbp);
+            assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
+            assert_eq!(0x5574d795fb60, core.rip.rip);
+        }
+    }
+
+    #[test]
+    fn test_inst_cycle() {
+        // 现在是拿到了解析好的指令，开始执行
+        let insts_vec = vec![
+            "push   %rbp",             // 0  5574d795f020
+            "mov    %rsp,%rbp",        // 1  5574d795f0e0
+            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
+            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
+            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
+            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
+            "add    %rdx,%rax",        // 6  5574D795F4A0
+            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
+            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
+            "pop    %rbp",             // 9  5574D795F6E0
+            "retq",                    // 10 5574D795F7A0
+            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
+            "mov    %rax,%rdi",        // 12 5574d795f920
+            "callq  $0x5574d795f020",  // 13 5574d795f9e0
+            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
+        ];
+        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
+        write_inst(insts_vec, 0x5574d795f020);
+        let mut core = Core::new();
+        core.rax.rax = 0x1234abcd;
+        core.rbx.rbx = 0x0;
+        core.rcx.rcx = 0x8000660;
         core.rdx.rdx = 0x12340000;
         core.rsi.rsi = 0xabcd;
         core.rdi.rdi = 0x12340000;
@@ -1253,35 +1327,5 @@ mod tests {
         write64bits_dram(va2pa(0x00007ffffffee1c0).unwrap(), 0xabcd);
 
         // ************************从这开始 准备好了数据*************
-        println!("init value {:x}",read64bits_dram(va2pa(0x7ffffffee1e8).unwrap()).unwrap());
-
-        // 取指 译码 执行
-        let mut pa_addr = 0;
-        unsafe {
-            pa_addr = va2pa(core.rip.rip).unwrap();
-            println!("{}", pa_addr);
-        }
-        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
-
-        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
-        // 现在是拿到了解析好的指令，开始执行
-        oper_inst(inst, &mut core);
-
-        unsafe {
-            assert_eq!(0x1234abcd, core.rax.rax);
-            assert_eq!(0x0, core.rbx.rbx);
-            assert_eq!(0x8000660, core.rcx.rcx);
-            assert_eq!(0x12340000, core.rdx.rdx);
-            assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x12340000, core.rdi.rdi);
-            assert_eq!(0x7ffffffee210, core.rbp.rbp);
-            assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
-            assert_eq!(0x5574d795faa0, core.rip.rip);
-        }
-    }
-
-    #[test]
-    fn test_inst_cycle() {
-        // 现在是拿到了解析好的指令，开始执行
     }
 }
