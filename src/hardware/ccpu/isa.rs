@@ -329,7 +329,7 @@ impl Core {
         }
     }
     fn update_reg(&mut self, od: &str, value: u64) {
-        println!("update_reg {}",od);
+        println!("update_reg {}", od);
         match od {
             "rax" => self.rax.rax = value,
             "eax" => self.rax.eax = value as u32,
@@ -499,7 +499,7 @@ fn parse_inst_type(str: &str) -> Option<INST_TYPE> {
         "pop" => Some(INST_TYPE::POP),
         "leave" => Some(INST_TYPE::LEAVE),
         "callq" => Some(INST_TYPE::CALL),
-        "ret" => Some(INST_TYPE::RET),
+        "retq" => Some(INST_TYPE::RET),
         "add" => Some(INST_TYPE::ADD),
         "sub" => Some(INST_TYPE::SUB),
         "cmp" => Some(INST_TYPE::CMP),
@@ -865,14 +865,14 @@ fn add_handler(src: OD, dst: OD, core: &mut Core) {
         OD::REG64(value, string) => {
             let dst_value = core.get_reg_value(string.as_str()).unwrap();
             core.update_reg(&string.as_str()[1..], dst_value + src_value);
-        },
+        }
         OD::M_IMM(_) => todo!(),
         OD::M_REG(_) => todo!(),
     }
     update_pc(core);
 }
 
-// call 其实就是将结果给rip
+// call 其实就是将结果给rip,同时把当前rip的值写入
 fn call_handler(src: OD, core: &mut Core) {
     let src_value = match src {
         OD::EMPTY => panic!("bad src in call inst"),
@@ -881,11 +881,13 @@ fn call_handler(src: OD, core: &mut Core) {
         OD::M_IMM(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
         OD::M_REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
     };
-    core.update_reg("rip", src_value);
     // 同时栈+8
     unsafe {
         core.rsp.rsp -= 8;
+        write64bits_dram(va2pa(core.rsp.rsp).unwrap(), core.get_reg_value("rip").unwrap());
     }
+    core.update_reg("rip", src_value);
+    // 将下一条指令写入的内容写入
 }
 
 // 执行指令
@@ -902,7 +904,7 @@ fn oper_inst(inst: Inst, core: &mut Core) {
         }
         INST_TYPE::LEAVE => todo!(),
         INST_TYPE::CALL => call_handler(inst.src, core),
-        INST_TYPE::RET => todo!(),
+        INST_TYPE::RET => retq_handler(core),
         INST_TYPE::ADD => add_handler(inst.src, inst.dst, core),
         INST_TYPE::SUB => todo!(),
         INST_TYPE::CMP => todo!(),
@@ -912,7 +914,16 @@ fn oper_inst(inst: Inst, core: &mut Core) {
     }
 }
 
-fn callq_handler(core: &mut Core) {}
+// 本质上就是取出rsp地址上的值给rip，然后rsp+8
+fn retq_handler(core: &mut Core) {
+    unsafe {
+        let va_addr = core.rsp.rsp;
+        println!("rsp value {:x}",va_addr);
+        println!("rsp value {:x}",read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
+        core.update_reg("rip", read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
+        core.update_reg("rsp", va_addr + 8);
+    }
+}
 
 fn str_to_inst(str: &str, core: &mut Core) -> Inst {
     println!("str to inst : {}", &str);
@@ -1022,7 +1033,7 @@ mod tests {
             "retq",                    // 10
             "mov    %rdx,%rsi",        // 11
             "mov    %rax,%rdi",        // 12
-            "callq  $0x00400000",       // 13
+            "callq  $0x5574d795f020",  // 13
             "mov    %rax,-0x8(%rbp)",  // 14
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
@@ -1084,7 +1095,7 @@ mod tests {
             "retq",                    // 10 5574D795F7A0
             "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
             "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",   // 13 5574d795f9e0
+            "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
@@ -1131,9 +1142,8 @@ mod tests {
         }
     }
 
-
     #[test]
-    fn test_add(){
+    fn test_add() {
         let insts_vec = vec![
             "push   %rbp",             // 0  5574d795f020
             "mov    %rsp,%rbp",        // 1  5574d795f0e0
@@ -1148,7 +1158,7 @@ mod tests {
             "retq",                    // 10 5574D795F7A0
             "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
             "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",   // 13 5574d795f9e0
+            "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
@@ -1173,6 +1183,8 @@ mod tests {
         write64bits_dram(va2pa(0x00007ffffffee1e0).unwrap(), 0x7ffffffee210);
 
         // ************************从这开始 准备好了数据*************
+        println!("init value {:x}",read64bits_dram(va2pa(0x00007ffffffee1e8).unwrap()).unwrap());
+
 
         // 取指 译码 执行
         let mut pa_addr = 0;
@@ -1200,7 +1212,7 @@ mod tests {
     }
 
     #[test]
-    fn test_retq(){
+    fn test_retq() {
         let insts_vec = vec![
             "push   %rbp",             // 0  5574d795f020
             "mov    %rsp,%rbp",        // 1  5574d795f0e0
@@ -1215,7 +1227,7 @@ mod tests {
             "retq",                    // 10 5574D795F7A0
             "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
             "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",   // 13 5574d795f9e0
+            "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
         // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
@@ -1241,6 +1253,7 @@ mod tests {
         write64bits_dram(va2pa(0x00007ffffffee1c0).unwrap(), 0xabcd);
 
         // ************************从这开始 准备好了数据*************
+        println!("init value {:x}",read64bits_dram(va2pa(0x7ffffffee1e8).unwrap()).unwrap());
 
         // 取指 译码 执行
         let mut pa_addr = 0;

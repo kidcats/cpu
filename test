@@ -401,3 +401,21 @@ rbp =     7ffffffee210  rsp =     7ffffffee1f0  rip =     5574d795fb60
 0x00007ffffffee1a8 :                0
 register match
 memory match
+
+
+rax =         12340000  rbx =                0  rcx =          8000660  
+rdx =             abcd  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1f0  rip =     5574d795f9e0
+call
+rax =         12340000  rbx =                0   rcx =          8000660  
+rdx =             abcd  rsi =             abcd   rdi =         12340000
+rbp =     7ffffffee210  rsp =     7ffffffee1e8   rip =     5574d795f020
+0x00007ffffffee1e8 :     5574d795faa0 <== rsp
+
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1e8  rip =     5574d795f7a0
+retq
+rax =         1234abcd  rbx =                0  rcx =          8000660  
+rdx =         12340000  rsi =             abcd  rdi =         12340000  
+rbp =     7ffffffee210  rsp =     7ffffffee1f0  rip =     5574d795faa0

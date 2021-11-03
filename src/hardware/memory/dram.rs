@@ -12,13 +12,13 @@ pub fn read64bits_dram(pa_addr: u64) -> Option<u64> {
     let mut result: u64 = 0;
     unsafe {
         result += (pm[index + 0] as u64) << 0;
-        result += (pm[index + 8] as u64) << 8;
-        result += (pm[index + 16] as u64) << 16;
-        result += (pm[index + 24] as u64) << 24;
-        result += (pm[index + 32] as u64) << 32;
-        result += (pm[index + 40] as u64) << 40;
-        result += (pm[index + 48] as u64) << 48;
-        result += (pm[index + 56] as u64) << 56;
+        result += (pm[index + 1] as u64) << 8;
+        result += (pm[index + 2] as u64) << 16;
+        result += (pm[index + 3] as u64) << 24;
+        result += (pm[index + 4] as u64) << 32;
+        result += (pm[index + 5] as u64) << 40;
+        result += (pm[index + 6] as u64) << 48;
+        result += (pm[index + 7] as u64) << 56;
     }
     return Some(result);
 }
@@ -27,13 +27,13 @@ pub fn write64bits_dram(pa_addr: u64, value: u64) {
     let index = pa_addr as usize;
     unsafe {
         pm[index + 0] = (value >> 0) as u8;
-        pm[index + 8] = (value >> 8) as u8;
-        pm[index + 16] = (value >> 16) as u8;
-        pm[index + 24] = (value >> 24) as u8;
-        pm[index + 32] = (value >> 32) as u8;
-        pm[index + 40] = (value >> 40) as u8;
-        pm[index + 48] = (value >> 48) as u8;
-        pm[index + 56] = (value >> 56) as u8;
+        pm[index + 1] = (value >> 8) as u8;
+        pm[index + 2] = (value >> 16) as u8;
+        pm[index + 3] = (value >> 24) as u8;
+        pm[index + 4] = (value >> 32) as u8;
+        pm[index + 5] = (value >> 40) as u8;
+        pm[index + 6] = (value >> 48) as u8;
+        pm[index + 7] = (value >> 56) as u8;
     }
 }
 
@@ -42,7 +42,7 @@ pub fn write_inst_dram(pa_addr: u64, str: &str) {
     for i in 0..24 {
         if i < str.len() {
             let char = str.as_bytes()[i];
-            println!("{}",char);
+            // println!("{}",char);
             unsafe {
                 pm[pa_addr as usize + i] = char;
             }
@@ -73,12 +73,25 @@ mod tests {
 
     #[test]
     fn test_write_and_read() {
-        let value: u64 = 0x1234abcdff11ff11;
-        println!("{:x}", value >> 8);
-        println!("{:x}", value >> 16);
-        let pa_addr = 100;
-        write64bits_dram(pa_addr, value);
-        let read_value = read64bits_dram(pa_addr).unwrap();
+        let value: u64 = 0x5574d795faa0;
+        println!("{:x}", value );
+        let va_addr = 0x00007ffffffee1e8;
+        // write64bits_dram(va2pa(va_addr).unwrap(), value);
+        println!("{}",va2pa(0x00007ffffffee210).unwrap());
+        println!("{}",va2pa(0x00007ffffffee200).unwrap());
+        println!("{}",va2pa(0x00007ffffffee1f8).unwrap());
+        println!("{}",va2pa(0x00007ffffffee1f0).unwrap());
+        println!("{}",va2pa(0x00007ffffffee1e8).unwrap());
+        println!("{}",va2pa(0x00007ffffffee1c8).unwrap());
+        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
+        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
+        write64bits_dram(va2pa(0x00007ffffffee1c0).unwrap(), 0xabcd);
+        write64bits_dram(va2pa(0x00007ffffffee1c8).unwrap(), 0x12340000);
+        write64bits_dram(va2pa(0x00007ffffffee1e0).unwrap(), 0x7ffffffee210);
+        write64bits_dram(va2pa(0x00007ffffffee1e8).unwrap(), 0x5574d795faa0);
+        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
+        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
+        let read_value = read64bits_dram(va2pa(va_addr).unwrap()).unwrap();
         assert_eq!(read_value, value);
     }
 
