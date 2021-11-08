@@ -376,11 +376,11 @@ impl Core {
             "cx" => self.rcx.cx = value as u16,
             "ch" => self.rcx.inner.ch = value as u8,
             "cl" => self.rcx.inner.cl = value as u8,
-            "rdx" => self.rax.rax = value,
-            "edx" => self.rax.eax = value as u32,
-            "dx" => self.rax.ax = value as u16,
-            "dh" => self.rax.inner.ah = value as u8,
-            "dl" => self.rax.inner.al = value as u8,
+            "rdx" => self.rdx.rdx = value,
+            "edx" => self.rdx.edx = value as u32,
+            "dx" => self.rdx.dx = value as u16,
+            "dh" => self.rdx.inner.dh = value as u8,
+            "dl" => self.rdx.inner.dl = value as u8,
             "rsi" => self.rsi.rsi = value,
             "esi" => self.rsi.esi = value as u32,
             "si" => self.rsi.si = value as u16,
@@ -593,9 +593,9 @@ fn hex_str2u(str: &str) -> u64 {
 }
 
 // usize 和 isize 相加减
-fn icalu(n1: i64, n2: u64) -> u64 {
+fn icalu(n1: i64, n2: u64,is_neg:bool) -> u64 {
     let n_temp = n1.abs() as u64;
-    let result = if n1 > 0 { n2 + n_temp } else { n2 - n_temp };
+    let result = if !is_neg { n2 + n_temp } else { n2 - n_temp };
     return result;
 }
 
@@ -786,9 +786,9 @@ fn parse_mm_ist(str: &str, core: &Core) -> u64 {
     };
     let temp = core.get_reg_value(r1.as_str()).unwrap()
         + core.get_reg_value(r2.as_str()).unwrap() * scal_temp;
-    println!("temp : {}", &temp);
+    // println!("temp : {}", &temp);
     let temp2 = hex_str2i(imm.as_str());
-    icalu(temp2, temp)
+    icalu(temp2, temp,imm_is_neg)
 }
 
 // 解析操作数的类型,获取对应的数值，有可能是地址，有可能是纯数值
@@ -843,7 +843,7 @@ fn mov_handler(src: OD, dst: OD, core: &mut Core) {
         }
         // OD::REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
         OD::REG64(value, string) => {
-            // println!("{}", &string.as_str()[1..]);
+            println!("1c8  {:x}", src_value);
             core.update_reg(&string.as_str()[1..], src_value)
         }
         OD::M_IMM(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
@@ -872,8 +872,9 @@ fn push_handler(src: OD, core: &mut Core) {
 fn pop_handler(src: OD, core: &mut Core) {
     unsafe {
         let src_value = read64bits_dram(va2pa(core.rsp.rsp).unwrap());
+        println!("pop src value {:x}",src_value.unwrap());
         match src {
-            OD::REG64(value, string) => core.update_reg(&string.as_str()[1..], value),
+            OD::REG64(value, string) => core.update_reg(&string.as_str()[1..], src_value.unwrap()),
             _ => panic!("bad pop inst"),
         }
         core.rsp.rsp += 8;
@@ -915,9 +916,10 @@ fn call_handler(src: OD, core: &mut Core) {
     // 同时栈+8
     unsafe {
         core.rsp.rsp -= 8;
+        println!("in cal {:x}",core.rsp.rsp);
         write64bits_dram(
             va2pa(core.rsp.rsp).unwrap(),
-            core.get_reg_value("rip").unwrap(),
+            core.get_reg_value("%rip").unwrap()+0xc0,
         );
     }
     core.update_reg("rip", src_value);
@@ -952,9 +954,9 @@ fn oper_inst(inst: Inst, core: &mut Core) {
 fn retq_handler(core: &mut Core) {
     unsafe {
         let va_addr = core.rsp.rsp;
-        println!("rsp value {:x}", va_addr);
+        println!("retq va_addr value {:x}", va_addr);
         println!(
-            "rsp value {:x}",
+            "retq  value {:x}",
             read64bits_dram(va2pa(va_addr).unwrap()).unwrap()
         );
         core.update_reg("rip", read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
@@ -1023,7 +1025,7 @@ mod tests {
         assert_eq!(0x104, parse_mm_ist("4(%eax)", &core));
         assert_eq!(0x10c, parse_mm_ist(" 9( %eax , %edx)", &core));
         assert_eq!(0x108, parse_mm_ist("260(%ecx,%edx)", &core));
-        assert_eq!(0xfc + 4, parse_mm_ist("0xfc(,%ecx,4)", &core));
+        assert_eq!(0x2, parse_mm_ist("-0x2(,%ecx,4)", &core));
         assert_eq!(0x10c, parse_mm_ist("(%eax,%edx,4)", &core));
     }
 
@@ -1046,7 +1048,7 @@ mod tests {
 
     #[test]
     fn test_inst_type_parse() {
-        let i1: Vec<&str> = "mov call jne add".split(" ").collect();
+        let i1: Vec<&str> = "mov callq jne add".split(" ").collect();
         assert_eq!(INST_TYPE::MOV, parse_inst_type(i1[0]).unwrap());
         assert_eq!(INST_TYPE::CALL, parse_inst_type(i1[1]).unwrap());
         assert_eq!(INST_TYPE::JNE, parse_inst_type(i1[2]).unwrap());
@@ -1300,6 +1302,7 @@ mod tests {
             // 现在是拿到了解析好的指令，开始执行
             oper_inst(inst, &mut core);
             core.get_all_reg_value();
+            println!("ox1e8 value {:x}",read64bits_dram(va2pa(0x7ffffffee1c8).unwrap()).unwrap());
         }
 
         unsafe {
