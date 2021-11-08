@@ -182,7 +182,7 @@ union RIP_REG {
     eip: u32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 enum OD {
     EMPTY,
     IMM(u64),
@@ -206,9 +206,21 @@ enum OD {
                 // M_IMM_REG_REG_S(u64)
 }
 
+impl fmt::Debug for OD{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
+        match self {
+            Self::EMPTY => write!(f, "EMPTY"),
+            Self::IMM(arg0) => write!(f, "IMM {:x}",arg0),
+            Self::REG64(arg0, arg1) => write!(f, "REG{} ({:x})",arg1,arg0),
+            Self::M_IMM(arg0) => write!(f, "M_IMM {:x}",arg0),
+            Self::M_REG(arg0) => write!(f, "M_REG {:x}",arg0),
+        }
+    }
+}
+
 // 需要的指令类型
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 enum INST_TYPE {
     MOV,
     PUSH,
@@ -221,6 +233,24 @@ enum INST_TYPE {
     CMP,
     JNE,
     JMP,
+}
+
+impl fmt::Debug for INST_TYPE{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
+        match self {
+            Self::MOV => write!(f, "MOV"),
+            Self::PUSH => write!(f, "PUSH"),
+            Self::POP => write!(f, "POP"),
+            Self::LEAVE => write!(f, "LEAVE"),
+            Self::CALL => write!(f, "CALL"),
+            Self::RET => write!(f, "RET"),
+            Self::ADD => write!(f, "ADD"),
+            Self::SUB => write!(f, "SUB"),
+            Self::CMP => write!(f, "CMP"),
+            Self::JNE => write!(f, "JNE"),
+            Self::JMP => write!(f, "JMP"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -1042,7 +1072,6 @@ mod tests {
             "callq  $0x5574d795f020",  // 13
             "mov    %rax,-0x8(%rbp)",  // 14
         ];
-        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x12340000;
@@ -1104,7 +1133,6 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x12340000;
@@ -1167,7 +1195,6 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0xabcd;
@@ -1238,7 +1265,6 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x1234abcd;
@@ -1262,7 +1288,7 @@ mod tests {
             let mut pa_addr = 0;
             unsafe {
                 pa_addr = va2pa(core.rip.rip).unwrap();
-                println!("{}", pa_addr);
+                println!("{:x}", pa_addr);
             }
             let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
 
@@ -1304,7 +1330,6 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        // println!("{:?},{:?},{:?}",oper_str,src_str,dst_str);
         write_inst(insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x1234abcd;
