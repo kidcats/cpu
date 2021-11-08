@@ -206,14 +206,14 @@ enum OD {
                 // M_IMM_REG_REG_S(u64)
 }
 
-impl fmt::Debug for OD{
+impl fmt::Debug for OD {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
         match self {
             Self::EMPTY => write!(f, "EMPTY"),
-            Self::IMM(arg0) => write!(f, "IMM {:x}",arg0),
-            Self::REG64(arg0, arg1) => write!(f, "REG{} ({:x})",arg1,arg0),
-            Self::M_IMM(arg0) => write!(f, "M_IMM {:x}",arg0),
-            Self::M_REG(arg0) => write!(f, "M_REG {:x}",arg0),
+            Self::IMM(arg0) => write!(f, "IMM {:x}", arg0),
+            Self::REG64(arg0, arg1) => write!(f, "REG{} ({:x})", arg1, arg0),
+            Self::M_IMM(arg0) => write!(f, "M_IMM {:x}", arg0),
+            Self::M_REG(arg0) => write!(f, "M_REG {:x}", arg0),
         }
     }
 }
@@ -235,7 +235,7 @@ enum INST_TYPE {
     JMP,
 }
 
-impl fmt::Debug for INST_TYPE{
+impl fmt::Debug for INST_TYPE {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
         match self {
             Self::MOV => write!(f, "MOV"),
@@ -517,6 +517,12 @@ impl Core {
                 "%eip" => Some(self.rip.eip as u64),
                 default => Some(0 as u64),
             }
+        }
+    }
+    fn get_all_reg_value(&self) {
+        unsafe {
+            println!("rax : {:x}, rbx: {:x} rcx {:x} \n rdx {:x} rsi {:x} rdi {:x} \n rbp {:x} rsp {:x},rip {:x}",
+            self.rax.rax,self.rbx.rbx,self.rcx.rcx,self.rdx.rdx,self.rsi.rsi,self.rdi.rdi,self.rbp.rbp,self.rsp.rsp,self.rip.rip)
         }
     }
 }
@@ -806,12 +812,7 @@ fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
     }
 }
 
-// 将指令写入硬盘
-fn write_inst(insts: Vec<&str>, pa: u64) {
-    for num in 0..insts.len() {
-        write_inst_dram(va2pa(pa + (0xc0 * num) as u64).unwrap(), insts[num]);
-    }
-}
+
 
 // 更新pc
 fn update_pc(core: &mut Core) {
@@ -997,6 +998,7 @@ fn str_to_inst(str: &str, core: &mut Core) -> Inst {
 mod tests {
     use super::{parse_inst_type, parse_od_type, Core, Inst};
     use crate::hardware::ccpu::isa::*;
+    use crate::hardware::memory::dram::write_inst;
     use std::i64;
 
     #[test]
@@ -1072,7 +1074,7 @@ mod tests {
             "callq  $0x5574d795f020",  // 13
             "mov    %rax,-0x8(%rbp)",  // 14
         ];
-        write_inst(insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x12340000;
         core.rbx.rbx = 0x0;
@@ -1133,7 +1135,7 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        write_inst(insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x12340000;
         core.rbx.rbx = 0x0;
@@ -1195,7 +1197,7 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        write_inst(insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0xabcd;
         core.rbx.rbx = 0x0;
@@ -1222,6 +1224,7 @@ mod tests {
         );
 
         // 取指 译码 执行
+        println!("******************************");
         let mut pa_addr = 0;
         unsafe {
             pa_addr = va2pa(core.rip.rip).unwrap();
@@ -1249,25 +1252,25 @@ mod tests {
     #[test]
     fn test_retq() {
         let insts_vec = vec![
-            "push   %rbp",             // 0  5574d795f020
-            "mov    %rsp,%rbp",        // 1  5574d795f0e0
-            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
-            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
-            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
-            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
-            "add    %rdx,%rax",        // 6  5574D795F4A0
-            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
-            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
-            "pop    %rbp",             // 9  5574D795F6E0
-            "retq",                    // 10 5574D795F7A0
-            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
-            "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",  // 13 5574d795f9e0
-            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
+            "push   %rbp             ",       // 0  0x5574d795f020
+            "mov    %rsp,%rbp        ",       // 1  0x5574d795f0e0
+            "mov    %rdi,-0x18(%rbp) ",       // 2  0x5574d795f1a0
+            "mov    %rsi,-0x20(%rbp) ",       // 3  0x5574D795F260
+            "mov    -0x18(%rbp),%rdx ",       // 4  0x5574D795F320
+            "mov    -0x20(%rbp),%rax ",       // 5  0x5574d795f3e0
+            "add    %rdx,%rax        ",       // 6  0x5574D795F4A0
+            "mov    %rax,-0x8(%rbp)  ",       // 7  0x5574D795F560
+            "mov    -0x8(%rbp),%rax  ",       // 8  0x5574D795F620
+            "pop    %rbp             ",       // 9  0x5574D795F6E0
+            "retq                    ",       // 10 0x5574D795F7A0
+            "mov    %rdx,%rsi        ",       // 11 0x5574d795f860  <= rip
+            "mov    %rax,%rdi        ",       // 12 0x5574d795f920
+            "callq  $0x5574d795f020  ",       // 13 0x5574d795f9e0
+            "mov    %rax,-0x8(%rbp)  ",       // 14 0x5574d795faa0
         ];
-        write_inst(insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
-        core.rax.rax = 0x1234abcd;
+        core.rax.rax = 0x12340000;
         core.rbx.rbx = 0x0;
         core.rcx.rcx = 0x8000660;
         core.rdx.rdx = 0xabcd;
@@ -1285,16 +1288,18 @@ mod tests {
         for i in 0..15 {
             // 循环从rip地址中取数据
             // 取指 译码 执行
+            println!("*************************");
             let mut pa_addr = 0;
             unsafe {
                 pa_addr = va2pa(core.rip.rip).unwrap();
-                println!("{:x}", pa_addr);
+                println!("{}", pa_addr);
             }
             let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
 
             println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
             // 现在是拿到了解析好的指令，开始执行
             oper_inst(inst, &mut core);
+            core.get_all_reg_value();
         }
 
         unsafe {
@@ -1330,7 +1335,7 @@ mod tests {
             "callq  $0x5574d795f020",  // 13 5574d795f9e0
             "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
         ];
-        write_inst(insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
         core.rax.rax = 0x1234abcd;
         core.rbx.rbx = 0x0;

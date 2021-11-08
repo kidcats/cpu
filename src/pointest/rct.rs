@@ -1,3 +1,5 @@
+
+
 use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 #[repr(C)]
@@ -22,7 +24,7 @@ impl Core {
         let mut x = RAX_REG {
             rax: 0x0000_0000_0000_0000,
         };
-        unsafe { Core { rax: x } }
+        Core { rax: x } 
     }
 
     fn update_reg(&mut self, od: &str, value: u64) {
