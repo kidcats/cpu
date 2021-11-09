@@ -49,12 +49,12 @@ enum INST_TYPE {
     MOV,
     PUSH,
     POP,
-    LEAVE,
+    LEAVEQ,
     CALL,
     RET,
     ADD,
     SUB,
-    CMP,
+    CMPQ,
     JNE,
     JMP,
 }
@@ -65,12 +65,12 @@ impl fmt::Debug for INST_TYPE {
             Self::MOV => write!(f, "MOV"),
             Self::PUSH => write!(f, "PUSH"),
             Self::POP => write!(f, "POP"),
-            Self::LEAVE => write!(f, "LEAVE"),
+            Self::LEAVEQ => write!(f, "LEAVEQ"),
             Self::CALL => write!(f, "CALL"),
             Self::RET => write!(f, "RET"),
             Self::ADD => write!(f, "ADD"),
             Self::SUB => write!(f, "SUB"),
-            Self::CMP => write!(f, "CMP"),
+            Self::CMPQ => write!(f, "CMPQ"),
             Self::JNE => write!(f, "JNE"),
             Self::JMP => write!(f, "JMP"),
         }
@@ -90,12 +90,12 @@ fn parse_inst_type(str: &str) -> Option<INST_TYPE> {
         "mov" => Some(INST_TYPE::MOV),
         "push" => Some(INST_TYPE::PUSH),
         "pop" => Some(INST_TYPE::POP),
-        "leave" => Some(INST_TYPE::LEAVE),
+        "leaveq" => Some(INST_TYPE::LEAVEQ),
         "callq" => Some(INST_TYPE::CALL),
         "retq" => Some(INST_TYPE::RET),
         "add" => Some(INST_TYPE::ADD),
         "sub" => Some(INST_TYPE::SUB),
-        "cmp" => Some(INST_TYPE::CMP),
+        "cmpq" => Some(INST_TYPE::CMPQ),
         "jne" => Some(INST_TYPE::JNE),
         "jmp" => Some(INST_TYPE::JMP),
         default => None,
@@ -372,7 +372,7 @@ fn parse_od_type(str: &str, core: &Core) -> Option<OD> {
 // 更新pc
 fn update_pc(core: &mut Core) {
     unsafe {
-        core.rip.rip = core.rip.rip + 0xc0;
+        core.rip.rip = core.rip.rip + 0x40;
     }
 }
 
@@ -405,6 +405,7 @@ fn mov_handler(src: OD, dst: OD, core: &mut Core) {
         OD::M_REG(addr) => write64bits_dram(va2pa(addr).unwrap(), src_value),
     };
     update_pc(core);
+    core.flags_reset();
 }
 
 // push 指令 mov %rxx (%rsp)，然后rsp-8
@@ -421,6 +422,7 @@ fn push_handler(src: OD, core: &mut Core) {
         write64bits_dram(va2pa(core.rsp.rsp).unwrap(), src_value);
     }
     update_pc(core);
+    core.flags_reset();
 }
 
 // 与push 相反 ，mov %(rsp) %rbp rsp += 8
@@ -434,6 +436,7 @@ fn pop_handler(src: OD, core: &mut Core) {
         }
         core.rsp.rsp += 8;
     }
+    core.flags_reset();
     update_pc(core)
 }
 
@@ -446,17 +449,29 @@ fn add_handler(src: OD, dst: OD, core: &mut Core) {
         OD::M_IMM(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
         OD::M_REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
     };
+    let src_sign = (src_value >> 63) & 0x1;
+    let mut dst_sign = 0;
+    let mut val_sign = 0;
+    let mut val = 0;
     match dst {
         OD::EMPTY => panic!("bad inst dst in add"),
         OD::IMM(_) => todo!(),
         OD::REG64(value, string) => {
             let dst_value = core.get_reg_value(string.as_str()).unwrap();
+            val = dst_value + src_value;
             core.update_reg(&string.as_str()[1..], dst_value + src_value);
+            dst_sign = (dst_value >> 63) & 0x1;
+            val_sign = (val >> 63) & 0x1;
         }
         OD::M_IMM(_) => todo!(),
         OD::M_REG(_) => todo!(),
     }
     update_pc(core);
+    core.flags.cf = val < src_value;
+    core.flags.zf = val == 0;
+    core.flags.sf = val_sign == 1;
+    core.flags.of = ((src_sign == 1 && dst_sign == 1) && val_sign == 0)
+        || ((src_sign == 0 && dst_sign == 0) && val_sign == 1);
 }
 
 // call 其实就是将结果给rip,同时把当前rip的值写入
@@ -474,35 +489,12 @@ fn call_handler(src: OD, core: &mut Core) {
         println!("in cal {:x}", core.rsp.rsp);
         write64bits_dram(
             va2pa(core.rsp.rsp).unwrap(),
-            core.get_reg_value("%rip").unwrap() + 0xc0,
+            core.get_reg_value("%rip").unwrap() + 0x40,
         );
     }
     core.update_reg("rip", src_value);
     // 将下一条指令写入的内容写入
-}
-
-// 执行指令
-fn oper_inst(inst: Inst, core: &mut Core) {
-    match &inst.inst_type {
-        INST_TYPE::MOV => {
-            mov_handler(inst.src, inst.dst, core);
-        }
-        INST_TYPE::PUSH => {
-            push_handler(inst.src, core);
-        }
-        INST_TYPE::POP => {
-            pop_handler(inst.src, core);
-        }
-        INST_TYPE::LEAVE => todo!(),
-        INST_TYPE::CALL => call_handler(inst.src, core),
-        INST_TYPE::RET => retq_handler(core),
-        INST_TYPE::ADD => add_handler(inst.src, inst.dst, core),
-        INST_TYPE::SUB => todo!(),
-        INST_TYPE::CMP => todo!(),
-        INST_TYPE::JNE => todo!(),
-        INST_TYPE::JMP => todo!(),
-        default => {}
-    }
+    core.flags_reset();
 }
 
 // 本质上就是取出rsp地址上的值给rip，然后rsp+8
@@ -516,6 +508,137 @@ fn retq_handler(core: &mut Core) {
         );
         core.update_reg("rip", read64bits_dram(va2pa(va_addr).unwrap()).unwrap());
         core.update_reg("rsp", va_addr + 8);
+    }
+    core.flags_reset();
+}
+// 与add 相反
+fn sub_handler(src: OD, dst: OD, core: &mut Core) {
+    let src_value = match src {
+        OD::EMPTY => panic!("bad inst src in add"),
+        OD::IMM(value) => value,
+        OD::REG64(value, _) => value,
+        OD::M_IMM(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+        OD::M_REG(addr) => read64bits_dram(va2pa(addr).unwrap()).unwrap(),
+    };
+    let mut dst_sign = 0;
+    let mut dst_value = 0;
+    let src_sign = src_value >> 63 & 0x1;
+    let mut val_sign = 0;
+    let mut val = 0;
+    match dst {
+        OD::EMPTY => panic!("bad inst dst in add"),
+        OD::IMM(_) => todo!(),
+        OD::REG64(value, string) => {
+            dst_value = core.get_reg_value(string.as_str()).unwrap();
+            val = dst_value - src_value;
+            dst_sign = (dst_value >> 63) & 0x1;
+            val_sign = (val >> 63) & 0x1;
+            core.update_reg(&string.as_str()[1..], dst_value - src_value);
+        }
+        OD::M_IMM(_) => todo!(),
+        OD::M_REG(_) => todo!(),
+    }
+    update_pc(core);
+    core.flags.cf = val > dst_value;
+    core.flags.zf = val == 0;
+    core.flags.sf = val_sign == 1;
+    core.flags.of = ((src_sign == 1 && dst_sign == 0) && val_sign == 1)
+        || ((src_sign == 0 && dst_sign == 1) && val_sign == 0);
+}
+
+fn cmpq_handler(src: OD, dst: OD, core: &mut Core) {
+    let src_value = match src {
+        OD::EMPTY => todo!(),
+        OD::IMM(value) => value,
+        OD::REG64(value, _) => value,
+        OD::M_IMM(_) => todo!(),
+        OD::M_REG(_) => todo!(),
+    };
+    let mut dst_sign = 0;
+    let mut dst_value = 0;
+    let src_sign = src_value >> 63 & 0x1;
+    let mut val_sign = 0;
+    let mut val = 0;
+    match dst {
+        OD::EMPTY => todo!(),
+        OD::IMM(_) => todo!(),
+        OD::REG64(_, _) => todo!(),
+        OD::M_IMM(va_addr) => {
+            dst_value = read64bits_dram(va2pa(va_addr).unwrap()).unwrap();
+            val = dst_value - src_value;
+            dst_sign = (dst_value >> 63) & 0x1;
+            val_sign = (val >> 63) & 0x1;
+        }
+        OD::M_REG(va_addr) => {
+            dst_value = read64bits_dram(va2pa(va_addr).unwrap()).unwrap();
+            val = dst_value - src_value;
+            dst_sign = (dst_value >> 63) & 0x1;
+            val_sign = (val >> 63) & 0x1;
+        }
+    }
+
+    update_pc(core);
+    core.flags.cf = val > dst_value;
+    core.flags.zf = val == 0;
+    core.flags.sf = val_sign == 1;
+    core.flags.of = ((src_sign == 1 && dst_sign == 0) && val_sign == 1)
+        || ((src_sign == 0 && dst_sign == 1) && val_sign == 0);
+}
+
+fn jne_handler(src: OD, dst: OD, core: &mut Core) {
+    let src_value = match src {
+        OD::EMPTY => todo!(),
+        OD::IMM(value) => value,
+        OD::REG64(_, _) => todo!(),
+        OD::M_IMM(_) => todo!(),
+        OD::M_REG(_) => todo!(),
+    };
+    if !core.flags.zf {
+        core.update_reg("rip", src_value);
+    } else {
+        update_pc(core);
+    }
+}
+
+fn jmp_handler(src: OD, dst: OD, core: &mut Core) {
+    let src_value = match src {
+        OD::EMPTY => todo!(),
+        OD::IMM(value) => value,
+        OD::REG64(_, _) => todo!(),
+        OD::M_IMM(_) => todo!(),
+        OD::M_REG(_) => todo!(),
+    };
+    core.update_reg("rip", src_value);
+    core.flags_reset();
+}
+
+// mov rbp,rsp
+// pop rbp
+fn leaveq_handler(src: OD, dst: OD, core: &mut Core) {
+    core.update_reg("rsp", core.get_reg_value("%rbp").unwrap());
+    // pop %rbp
+    let old_value = read64bits_dram(va2pa(core.get_reg_value("%rsp").unwrap()).unwrap()).unwrap();
+    core.update_reg("rbp", old_value);
+    core.update_reg("rsp", core.get_reg_value("%rsp").unwrap() + 8);
+    update_pc(core);
+    core.flags_reset();
+}
+
+// 执行指令
+fn oper_inst(inst: Inst, core: &mut Core) {
+    match &inst.inst_type {
+        INST_TYPE::MOV => mov_handler(inst.src, inst.dst, core),
+        INST_TYPE::PUSH => push_handler(inst.src, core),
+        INST_TYPE::POP => pop_handler(inst.src, core),
+        INST_TYPE::LEAVEQ => leaveq_handler(inst.src, inst.dst, core),
+        INST_TYPE::CALL => call_handler(inst.src, core),
+        INST_TYPE::RET => retq_handler(core),
+        INST_TYPE::ADD => add_handler(inst.src, inst.dst, core),
+        INST_TYPE::SUB => sub_handler(inst.src, inst.dst, core),
+        INST_TYPE::CMPQ => cmpq_handler(inst.src, inst.dst, core),
+        INST_TYPE::JNE => jne_handler(inst.src, inst.dst, core),
+        INST_TYPE::JMP => jmp_handler(inst.src, inst.dst, core),
+        _default => {}
     }
 }
 
@@ -560,6 +683,19 @@ mod tests {
     use std::i64;
 
     #[test]
+    fn test() {
+        let src_value: i64 = -100;
+        let dst_value = 101;
+        let val = src_value + dst_value;
+        let src_sign = (src_value >> 63) & 0x1;
+        let dst_sign = (dst_value >> 63) & 0x1;
+        let val_sign = (val >> 63) & 0x1;
+        assert_eq!(src_sign, 1);
+        assert_eq!(dst_sign, 0);
+        assert_eq!(val_sign, 0);
+    }
+
+    #[test]
     fn test_parse_mm_num() {
         let mut core = Core::new();
         core.rax.eax = 0x100;
@@ -585,219 +721,23 @@ mod tests {
     }
 
     #[test]
-    fn test_mov() {
-        // 立即数$，寄存器 %reg，内存 % 三种取,其中，立即数取得是数本身，不需要去地址取
-        // 想要的效果就是一条指令，根据空格分成三份，分别进行解析，解析出mov,src地址，dst地址
-        let insts_vec = vec![
-            "push   %rbp",             // 0
-            "mov    %rsp,%rbp",        // 1
-            "mov    %rdi,-0x18(%rbp)", // 2
-            "mov    %rsi,-0x20(%rbp)", // 3
-            "mov    -0x18(%rbp),%rdx", // 4
-            "mov    -0x20(%rbp),%rax", // 5
-            "add    %rdx,%rax",        // 6
-            "mov    %rax,-0x8(%rbp)",  // 7
-            "mov    -0x8(%rbp),%rax",  // 8
-            "pop    %rbp",             // 9
-            "retq",                    // 10
-            "mov    %rdx,%rsi",        // 11
-            "mov    %rax,%rdi",        // 12
-            "callq  $0x5574d795f020",  // 13
-            "mov    %rax,-0x8(%rbp)",  // 14
-        ];
-        write_inst(&insts_vec, 0x5574d795f020);
-        let mut core = Core::new();
-        core.rax.rax = 0x12340000;
-        core.rbx.rbx = 0x0;
-        core.rcx.rcx = 0x8000660;
-        core.rdx.rdx = 0xabcd;
-        core.rsi.rsi = 0x7ffffffee2f8;
-        core.rdi.rdi = 0x1;
-        core.rbp.rbp = 0x7ffffffee210;
-        core.rsp.rsp = 0x7ffffffee1f0;
-        core.rip.rip = 0x5574d795f860;
-        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
-        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
-        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
-
-        // ************************从这开始 准备好了数据*************
-        // 取指 译码 执行
-        let mut pa_addr = 0;
-        unsafe {
-            pa_addr = va2pa(core.rip.rip).unwrap();
-            // println!("{}",pa_addr);
-        }
-        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
-
-        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
-        // 现在是拿到了解析好的指令，开始执行
-        oper_inst(inst, &mut core);
-        // // mov执行结束后对比两者寄存器的变化
-        unsafe {
-            assert_eq!(0x12340000, core.rax.rax);
-            assert_eq!(0x0, core.rbx.rbx);
-            assert_eq!(0x8000660, core.rcx.rcx);
-            assert_eq!(0xabcd, core.rdx.rdx);
-            assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x1, core.rdi.rdi);
-            assert_eq!(0x7ffffffee210, core.rbp.rbp);
-            assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
-            assert_eq!(0x5574d795f920, core.rip.rip);
-        }
-    }
-
-    #[test]
-    fn test_call() {
-        let insts_vec = vec![
-            "push   %rbp",             // 0  5574d795f020
-            "mov    %rsp,%rbp",        // 1  5574d795f0e0
-            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
-            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
-            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
-            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
-            "add    %rdx,%rax",        // 6  5574D795F4A0
-            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
-            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
-            "pop    %rbp",             // 9  5574D795F6E0
-            "retq",                    // 10 5574D795F7A0
-            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
-            "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",  // 13 5574d795f9e0
-            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
-        ];
-        write_inst(&insts_vec, 0x5574d795f020);
-        let mut core = Core::new();
-        core.rax.rax = 0x12340000;
-        core.rbx.rbx = 0x0;
-        core.rcx.rcx = 0x8000660;
-        core.rdx.rdx = 0xabcd;
-        core.rsi.rsi = 0xabcd;
-        core.rdi.rdi = 0x12340000;
-        core.rbp.rbp = 0x7ffffffee210;
-        core.rsp.rsp = 0x7ffffffee1f0;
-        core.rip.rip = 0x5574d795f9e0;
-        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
-        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
-        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
-
-        // ************************从这开始 准备好了数据*************
-
-        // 取指 译码 执行
-        let mut pa_addr = 0;
-        unsafe {
-            pa_addr = va2pa(core.rip.rip).unwrap();
-            println!("{}", pa_addr);
-        }
-        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
-
-        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
-        // 现在是拿到了解析好的指令，开始执行
-        oper_inst(inst, &mut core);
-
-        unsafe {
-            assert_eq!(0x12340000, core.rax.rax);
-            assert_eq!(0x0, core.rbx.rbx);
-            assert_eq!(0x8000660, core.rcx.rcx);
-            assert_eq!(0xabcd, core.rdx.rdx);
-            assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x12340000, core.rdi.rdi);
-            assert_eq!(0x7ffffffee210, core.rbp.rbp);
-            assert_eq!(0x7ffffffee1e8, core.rsp.rsp);
-            assert_eq!(0x5574d795f020, core.rip.rip);
-        }
-    }
-
-    #[test]
-    fn test_add() {
-        let insts_vec = vec![
-            "push   %rbp",             // 0  5574d795f020
-            "mov    %rsp,%rbp",        // 1  5574d795f0e0
-            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
-            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
-            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
-            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
-            "add    %rdx,%rax",        // 6  5574D795F4A0
-            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
-            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
-            "pop    %rbp",             // 9  5574D795F6E0
-            "retq",                    // 10 5574D795F7A0
-            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
-            "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",  // 13 5574d795f9e0
-            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
-        ];
-        write_inst(&insts_vec, 0x5574d795f020);
-        let mut core = Core::new();
-        core.rax.rax = 0xabcd;
-        core.rbx.rbx = 0x0;
-        core.rcx.rcx = 0x8000660;
-        core.rdx.rdx = 0x12340000;
-        core.rsi.rsi = 0xabcd;
-        core.rdi.rdi = 0x12340000;
-        core.rbp.rbp = 0x7ffffffee1e0;
-        core.rsp.rsp = 0x7ffffffee1e0;
-        core.rip.rip = 0x5574d795f4a0;
-        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
-        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
-        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
-        write64bits_dram(va2pa(0x00007ffffffee1e8).unwrap(), 0x5574d795faa0);
-        write64bits_dram(va2pa(0x00007ffffffee1c8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1c0).unwrap(), 0xabcd);
-        write64bits_dram(va2pa(0x00007ffffffee1e0).unwrap(), 0x7ffffffee210);
-
-        // ************************从这开始 准备好了数据*************
-        println!(
-            "init value {:x}",
-            read64bits_dram(va2pa(0x00007ffffffee1e8).unwrap()).unwrap()
-        );
-
-        // 取指 译码 执行
-        println!("******************************");
-        let mut pa_addr = 0;
-        unsafe {
-            pa_addr = va2pa(core.rip.rip).unwrap();
-            println!("{}", pa_addr);
-        }
-        let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
-
-        println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
-        // 现在是拿到了解析好的指令，开始执行
-        oper_inst(inst, &mut core);
-
-        unsafe {
-            assert_eq!(0x1234abcd, core.rax.rax);
-            assert_eq!(0x0, core.rbx.rbx);
-            assert_eq!(0x8000660, core.rcx.rcx);
-            assert_eq!(0x12340000, core.rdx.rdx);
-            assert_eq!(0xabcd, core.rsi.rsi);
-            assert_eq!(0x12340000, core.rdi.rdi);
-            assert_eq!(0x7ffffffee1e0, core.rbp.rbp);
-            assert_eq!(0x7ffffffee1e0, core.rsp.rsp);
-            assert_eq!(0x5574d795f560, core.rip.rip);
-        }
-    }
-
-    #[test]
     fn test_retq() {
         let insts_vec = vec![
-            "push   %rbp             ", // 0  0x5574d795f020
-            "mov    %rsp,%rbp        ", // 1  0x5574d795f0e0
-            "mov    %rdi,-0x18(%rbp) ", // 2  0x5574d795f1a0
-            "mov    %rsi,-0x20(%rbp) ", // 3  0x5574D795F260
-            "mov    -0x18(%rbp),%rdx ", // 4  0x5574D795F320
-            "mov    -0x20(%rbp),%rax ", // 5  0x5574d795f3e0
-            "add    %rdx,%rax        ", // 6  0x5574D795F4A0
-            "mov    %rax,-0x8(%rbp)  ", // 7  0x5574D795F560
-            "mov    -0x8(%rbp),%rax  ", // 8  0x5574D795F620
-            "pop    %rbp             ", // 9  0x5574D795F6E0
-            "retq                    ", // 10 0x5574D795F7A0
-            "mov    %rdx,%rsi        ", // 11 0x5574d795f860  <= rip
-            "mov    %rax,%rdi        ", // 12 0x5574d795f920
-            "callq  $0x5574d795f020  ", // 13 0x5574d795f9e0
-            "mov    %rax,-0x8(%rbp)  ", // 14 0x5574d795faa0
+            "push   %rbp                             ", // 0  0x5574d795f020
+            "mov    %rsp,%rbp                        ", // 1  0x5574d795f060
+            "mov    %rdi,-0x18(%rbp)                 ", // 2  0x5574d795f0a0
+            "mov    %rsi,-0x20(%rbp)                 ", // 3  0x5574d795f0e0
+            "mov    -0x18(%rbp),%rdx                 ", // 4  0x5574d795f120
+            "mov    -0x20(%rbp),%rax                 ", // 5  0x5574d795f160
+            "add    %rdx,%rax                        ", // 6  0x5574d795f1a0
+            "mov    %rax,-0x8(%rbp)                  ", // 7  0x5574d795f1e0
+            "mov    -0x8(%rbp),%rax                  ", // 8  0x5574d795f220
+            "pop    %rbp                             ", // 9  0x5574d795f260
+            "retq                                    ", // 10 0x5574d795f2a0
+            "mov    %rdx,%rsi                        ", // 11 0x5574d795f2e0  <= rip
+            "mov    %rax,%rdi                        ", // 12 0x5574d795f320
+            "callq  $0x5574d795f020                  ", // 13 0x5574d795f360
+            "mov    %rax,-0x8(%rbp)                  ", // 14 0x5574d795f3a0
         ];
         write_inst(&insts_vec, 0x5574d795f020);
         let mut core = Core::new();
@@ -809,7 +749,7 @@ mod tests {
         core.rdi.rdi = 0x1;
         core.rbp.rbp = 0x7ffffffee210;
         core.rsp.rsp = 0x7ffffffee1f0;
-        core.rip.rip = 0x5574d795f860;
+        core.rip.rip = 0x5574d795f2e0;
         write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
         write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd); // rbp
         write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
@@ -846,7 +786,7 @@ mod tests {
             assert_eq!(0x12340000, core.rdi.rdi);
             assert_eq!(0x7ffffffee210, core.rbp.rbp);
             assert_eq!(0x7ffffffee1f0, core.rsp.rsp);
-            assert_eq!(0x5574d795fb60, core.rip.rip);
+            assert_eq!(0x5574d795f3e0, core.rip.rip);
         }
     }
 
@@ -854,43 +794,57 @@ mod tests {
     fn test_inst_cycle() {
         // 现在是拿到了解析好的指令，开始执行
         let insts_vec = vec![
-            "push   %rbp",             // 0  5574d795f020
-            "mov    %rsp,%rbp",        // 1  5574d795f0e0
-            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
-            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
-            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
-            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
-            "add    %rdx,%rax",        // 6  5574D795F4A0
-            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
-            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
-            "pop    %rbp",             // 9  5574D795F6E0
-            "retq",                    // 10 5574D795F7A0
-            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
-            "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  $0x5574d795f020",  // 13 5574d795f9e0
-            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
+            "push   %rbp                             ", // 0  0x400000
+            "mov    %rsp,%rbp                        ", // 1  0x400040
+            "sub    $0x10,%rsp                       ", // 2  0x400080
+            "mov    %rdi,-0x8(%rbp)                  ", // 3  0x4000c0
+            "cmpq   $0x0,-0x8(%rbp)                  ", // 4  0x400100
+            "jne    $0x400200                        ", // 5: 0x400140 jump to 8
+            "mov    $0x0,%eax                        ", // 6  0x400180
+            "jmp    $0x400380                        ", // 7: 0x4001c0 jump to 14
+            "mov    -0x8(%rbp),%rax                  ", // 8  0x400200
+            "sub    $0x1,%rax                        ", // 9  0x400240
+            "mov    %rax,%rdi                        ", // 10 0x400280
+            "callq  $0x00400000                      ", // 11 0x4002c0
+            "mov    -0x8(%rbp),%rdx                  ", // 12 0x400300
+            "add    %rdx,%rax                        ", // 13 0x400340
+            "leaveq                                  ", // 14 0x400380
+            "retq                                    ", // 15 0x4003c0
+            "mov    $0x3,%edi                        ", // 16 0x400400  rip
+            "callq  $0x00400000                      ", // 17 0x400440
+            "mov    %rax,-0x8(%rbp)                  ", // 18 0x400480
         ];
-        write_inst(&insts_vec, 0x5574d795f020);
+        write_inst(&insts_vec, 0x400000);
         let mut core = Core::new();
-        core.rax.rax = 0x1234abcd;
+        core.rax.rax = 0x8000630;
         core.rbx.rbx = 0x0;
-        core.rcx.rcx = 0x8000660;
-        core.rdx.rdx = 0x12340000;
-        core.rsi.rsi = 0xabcd;
-        core.rdi.rdi = 0x12340000;
-        core.rbp.rbp = 0x7ffffffee210;
-        core.rsp.rsp = 0x7ffffffee1e8;
-        core.rip.rip = 0x5574d795f7a0;
-        write64bits_dram(va2pa(0x00007ffffffee210).unwrap(), 0x0000000008000660); // rbp
-        write64bits_dram(va2pa(0x00007ffffffee200).unwrap(), 0xabcd);
-        write64bits_dram(va2pa(0x00007ffffffee1f8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1f0).unwrap(), 0x8000660);
-        write64bits_dram(va2pa(0x00007ffffffee1e8).unwrap(), 0x5574d795faa0);
-        write64bits_dram(va2pa(0x00007ffffffee1e0).unwrap(), 0x7ffffffee210);
-        write64bits_dram(va2pa(0x00007ffffffee1d8).unwrap(), 0x1234abcd);
-        write64bits_dram(va2pa(0x00007ffffffee1c8).unwrap(), 0x12340000);
-        write64bits_dram(va2pa(0x00007ffffffee1c0).unwrap(), 0xabcd);
+        core.rcx.rcx = 0x8000650;
+        core.rdx.rdx = 0x7ffffffee328;
+        core.rsi.rsi = 0x7ffffffee318;
+        core.rdi.rdi = 0x1;
+        core.rbp.rbp = 0x7ffffffee230;
+        core.rsp.rsp = 0x7ffffffee220;
+        core.rip.rip = 0x400400;
+        write64bits_dram(va2pa(0x7ffffffee230).unwrap(), 0x8000650); // rbp
+        write64bits_dram(va2pa(0x7ffffffee220).unwrap(), 0x7ffffffee310);
 
         // ************************从这开始 准备好了数据*************
+        for i in 0..19 {
+            // 循环从rip地址中取数据
+            // 取指 译码 执行
+            println!("*************************");
+            let mut pa_addr = 0;
+            unsafe {
+                pa_addr = va2pa(core.rip.rip).unwrap();
+                println!("{}", pa_addr);
+            }
+            let inst = str_to_inst(read_inst_dram(pa_addr).unwrap().as_str(), &mut core);
+
+            println!("{:?},{:?},{:?}", inst.inst_type, inst.src, inst.dst);
+            // 现在是拿到了解析好的指令，开始执行
+            oper_inst(inst, &mut core);
+            core.get_all_reg_value();
+            core.get_all_flags();
+        }
     }
 }

@@ -1,20 +1,20 @@
 
 
-            "push   %rbp",             // 0  5574d795f020
-            "mov    %rsp,%rbp",        // 1  5574d795f0e0
-            "mov    %rdi,-0x18(%rbp)", // 2  5574d795f1a0
-            "mov    %rsi,-0x20(%rbp)", // 3  5574D795F260
-            "mov    -0x18(%rbp),%rdx", // 4  5574D795F320
-            "mov    -0x20(%rbp),%rax", // 5  5574d795f3e0
-            "add    %rdx,%rax",        // 6  5574D795F4A0
-            "mov    %rax,-0x8(%rbp)",  // 7  5574D795F560
-            "mov    -0x8(%rbp),%rax",  // 8  5574D795F620
-            "pop    %rbp",             // 9  5574D795F6E0
-            "retq",                    // 10 5574D795F7A0
-            "mov    %rdx,%rsi",        // 11 5574d795f860  <= rip
-            "mov    %rax,%rdi",        // 12 5574d795f920
-            "callq  0x00400000",       // 13 5574d795f9e0
-            "mov    %rax,-0x8(%rbp)",  // 14 5574d795faa0
+            "push   %rbp                             ",       // 0  0x5574d795f020
+            "mov    %rsp,%rbp                        ",       // 1  0x5574d795f060
+            "mov    %rdi,-0x18(%rbp)                 ",       // 2  0x5574d795f0a0
+            "mov    %rsi,-0x20(%rbp)                 ",       // 3  0x5574d795f0e0
+            "mov    -0x18(%rbp),%rdx                 ",       // 4  0x5574d795f120
+            "mov    -0x20(%rbp),%rax                 ",       // 5  0x5574d795f160
+            "add    %rdx,%rax                        ",       // 6  0x5574d795f1a0
+            "mov    %rax,-0x8(%rbp)                  ",       // 7  0x5574d795f1e0
+            "mov    -0x8(%rbp),%rax                  ",       // 8  0x5574d795f220
+            "pop    %rbp                             ",       // 9  0x5574d795f260
+            "retq                                    ",       // 10 0x5574d795f2a0
+            "mov    %rdx,%rsi                        ",       // 11 0x5574d795f2e0  <= rip
+            "mov    %rax,%rdi                        ",       // 12 0x5574d795f320
+            "callq  $0x5574d795f020                  ",       // 13 0x5574d795f360
+            "mov    %rax,-0x8(%rbp)                  ",       // 14 0x5574d795f3a0
 
 rax =         12340000  rbx =                0  rcx =          8000660  
 rdx =             abcd  rsi =     7ffffffee2f8  rdi =                1  

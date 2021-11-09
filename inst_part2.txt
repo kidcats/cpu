@@ -1,0 +1,1425 @@
+/usr/bin/gcc-7 -Wall -g -O2 -Werror -std=gnu99 -Wno-unused-function -I./src ./src/common/print.c ./src/common/convert.c ./src/hardware/cpu/mmu.c ./src/hardware/cpu/isa.c ./src/hardware/memory/dram.c ./src/tests/test_hardware.c -o ./bin/test_hardware
+././bin/test_hardware
+
+        "push   %rbp                             ",   // 0  0x400000
+        "mov    %rsp,%rbp                        ",   // 1  0x400040
+        "sub    $0x10,%rsp                       ",   // 2  0x400080
+        "mov    %rdi,-0x8(%rbp)                  ",   // 3  0x4000c0
+        "cmpq   $0x0,-0x8(%rbp)                  ",   // 4  0x400100
+        "jne    0x400200                         ",   // 5: 0x400140 jump to 8
+        "mov    $0x0,%eax                        ",   // 6  0x400180
+        "jmp    0x400380                         ",   // 7: 0x4001c0 jump to 14
+        "mov    -0x8(%rbp),%rax                  ",   // 8  0x400200
+        "sub    $0x1,%rax                        ",   // 9  0x400240
+        "mov    %rax,%rdi                        ",   // 10 0x400280
+        "callq  0x00400000                       ",   // 11 0x4002c0
+        "mov    -0x8(%rbp),%rdx                  ",   // 12 0x400300
+        "add    %rdx,%rax                        ",   // 13 0x400340
+        "leaveq                                  ",   // 14 0x400380
+        "retq                                    ",   // 15 0x4003c0
+        "mov    $0x3,%edi                        ",   // 16 0x400400  rip
+        "callq  0x00400000                       ",   // 17 0x400440
+        "mov    %rax,-0x8(%rbp)                  ",   // 18 0x400480
+
+begin
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee230	rsp =     7ffffffee220
+rip =           400400
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee270 :                0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310 <== rsp
+0x    7ffffffee218 :                0
+0x    7ffffffee210 :                0
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+**********************************  mov    $0x3,%edi 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee230	rsp =     7ffffffee220
+rip =           4004C0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee270 :                0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310 <== rsp
+0x    7ffffffee218 :                0
+0x    7ffffffee210 :                0
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+**********************************  callq  0x3FF800 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee230	rsp =     7ffffffee218
+rip =           3FF800
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400580 <== rsp
+0x    7ffffffee210 :                0
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+**********************************  push   %rbp 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee230	rsp =     7ffffffee210
+rip =           3FF8C0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400580
+0x    7ffffffee210 :     7ffffffee230 <== rsp
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+**********************************  mov    %rsp,%rbp 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee210
+rip =           3FF980
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230 <== rsp
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+**********************************  sub    $0x10,%rsp 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           3FFA40
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                0
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  mov    %rdi,-0x8(%rbp) 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           3FFB00
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  cmpq   $0x0,-0x8(%rbp) 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           3FFBC0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  jne    0x400200 
+rax =          8000630	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400200
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  mov    -0x8(%rbp),%rax 
+rax =                3	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400240
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  sub    $0x1,%rax 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                3	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400280
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  mov    %rax,%rdi 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           4002c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :                0
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+**********************************  callq  0x00400000 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee210	rsp =     7ffffffee1f8
+rip =           400000
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300 <== rsp
+0x    7ffffffee1f0 :                0
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+**********************************  push   %rbp 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee210	rsp =     7ffffffee1f0
+rip =           400040
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210 <== rsp
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+**********************************  mov    %rsp,%rbp 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1f0
+rip =           400080
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210 <== rsp
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+**********************************  sub    $0x10,%rsp 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           4000c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                0
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  mov    %rdi,-0x8(%rbp) 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400100
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  cmpq   $0x0,-0x8(%rbp) 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400140
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  jne    0x400200 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400200
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  mov    -0x8(%rbp),%rax 
+rax =                2	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400240
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  sub    $0x1,%rax 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                2	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400280
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  mov    %rax,%rdi 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           4002c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :                0
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  callq  0x00400000 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1f0	rsp =     7ffffffee1d8
+rip =           400000
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300 <== rsp
+0x    7ffffffee1d0 :                0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+**********************************  push   %rbp 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1f0	rsp =     7ffffffee1d0
+rip =           400040
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0 <== rsp
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+**********************************  mov    %rsp,%rbp 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1d0
+rip =           400080
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0 <== rsp
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+**********************************  sub    $0x10,%rsp 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           4000c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                0
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  mov    %rdi,-0x8(%rbp) 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400100
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  cmpq   $0x0,-0x8(%rbp) 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400140
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  jne    0x400200 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400200
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  mov    -0x8(%rbp),%rax 
+rax =                1	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400240
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  sub    $0x1,%rax 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                1	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400280
+CF = 0	ZF = 1	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  mov    %rax,%rdi 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           4002c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :                0
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  callq  0x00400000 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1b8
+rip =           400000
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300 <== rsp
+0x    7ffffffee1b0 :                0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+**********************************  push   %rbp 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1b0
+rip =           400040
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0 <== rsp
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+**********************************  mov    %rsp,%rbp 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1b0
+rip =           400080
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0 <== rsp
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+**********************************  sub    $0x10,%rsp 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           4000c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  mov    %rdi,-0x8(%rbp) 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           400100
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  cmpq   $0x0,-0x8(%rbp) 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           400140
+CF = 0	ZF = 1	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  jne    0x400200 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           400180
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  mov    $0x0,%eax 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           4001c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  jmp    0x400380 
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1b0	rsp =     7ffffffee1a0
+rip =           400380
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0 <== rsp
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+0x    7ffffffee168 :                0
+0x    7ffffffee160 :                0
+0x    7ffffffee158 :                0
+**********************************  leaveq  
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1b8
+rip =           4003c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300 <== rsp
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+0x    7ffffffee170 :                0
+**********************************  retq    
+rax =                0	rbx =                0	rcx =          8000650	rdx =     7ffffffee328
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400300
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  mov    -0x8(%rbp),%rdx 
+rax =                0	rbx =                0	rcx =          8000650	rdx =                1
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400340
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  add    %rdx,%rax 
+rax =                1	rbx =                0	rcx =          8000650	rdx =                1
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1d0	rsp =     7ffffffee1c0
+rip =           400380
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0 <== rsp
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+0x    7ffffffee188 :                0
+0x    7ffffffee180 :                0
+0x    7ffffffee178 :                0
+**********************************  leaveq  
+rax =                1	rbx =                0	rcx =          8000650	rdx =                1
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1f0	rsp =     7ffffffee1d8
+rip =           4003c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300 <== rsp
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+0x    7ffffffee190 :                0
+**********************************  retq    
+rax =                1	rbx =                0	rcx =          8000650	rdx =                1
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400300
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  mov    -0x8(%rbp),%rdx 
+rax =                1	rbx =                0	rcx =          8000650	rdx =                2
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400340
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  add    %rdx,%rax 
+rax =                3	rbx =                0	rcx =          8000650	rdx =                2
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee1f0	rsp =     7ffffffee1e0
+rip =           400380
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0 <== rsp
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+0x    7ffffffee1a8 :                0
+0x    7ffffffee1a0 :                0
+0x    7ffffffee198 :                0
+**********************************  leaveq  
+rax =                3	rbx =                0	rcx =          8000650	rdx =                2
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee210	rsp =     7ffffffee1f8
+rip =           4003c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300 <== rsp
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+0x    7ffffffee1b0 :     7ffffffee1d0
+**********************************  retq    
+rax =                3	rbx =                0	rcx =          8000650	rdx =                2
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400300
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+**********************************  mov    -0x8(%rbp),%rdx 
+rax =                3	rbx =                0	rcx =          8000650	rdx =                3
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400340
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+**********************************  add    %rdx,%rax 
+rax =                6	rbx =                0	rcx =          8000650	rdx =                3
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee210	rsp =     7ffffffee200
+rip =           400380
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0 <== rsp
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+0x    7ffffffee1c8 :                1
+0x    7ffffffee1c0 :                0
+0x    7ffffffee1b8 :           400300
+**********************************  leaveq  
+rax =                6	rbx =                0	rcx =          8000650	rdx =                3
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee230	rsp =     7ffffffee218
+rip =           4003c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310
+0x    7ffffffee218 :           400480 <== rsp
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+0x    7ffffffee1d0 :     7ffffffee1f0
+**********************************  retq    
+rax =                6	rbx =                0	rcx =          8000650	rdx =                3
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee230	rsp =     7ffffffee220
+rip =           400480
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee270 :                0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                0
+0x    7ffffffee220 :     7ffffffee310 <== rsp
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+**********************************  mov    %rax,-0x8(%rbp) 
+rax =                6	rbx =                0	rcx =          8000650	rdx =                3
+rsi =     7ffffffee318	rdi =                0	rbp =     7ffffffee230	rsp =     7ffffffee220
+rip =           4004c0
+CF = 0	ZF = 0	SF = 0	OF = 0
+0x    7ffffffee270 :                0
+0x    7ffffffee268 :                0
+0x    7ffffffee260 :                0
+0x    7ffffffee258 :                0
+0x    7ffffffee250 :                0
+0x    7ffffffee248 :                0
+0x    7ffffffee240 :                0
+0x    7ffffffee238 :                0
+0x    7ffffffee230 :          8000650
+0x    7ffffffee228 :                6
+0x    7ffffffee220 :     7ffffffee310 <== rsp
+0x    7ffffffee218 :           400480
+0x    7ffffffee210 :     7ffffffee230
+0x    7ffffffee208 :                3
+0x    7ffffffee200 :                0
+0x    7ffffffee1f8 :           400300
+0x    7ffffffee1f0 :     7ffffffee210
+0x    7ffffffee1e8 :                2
+0x    7ffffffee1e0 :                0
+0x    7ffffffee1d8 :           400300
+register match
+memory match

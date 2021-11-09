@@ -1,7 +1,7 @@
 use std::{char};
 
 use crate::hardware::ccpu::mmu::va2pa;
-pub const PHYSICAL_MEMORY_SPACE: usize = 19200;
+pub const PHYSICAL_MEMORY_SPACE: usize = 40000;
 pub static mut PM: [u8; PHYSICAL_MEMORY_SPACE] = [0; PHYSICAL_MEMORY_SPACE];
 
 /**
@@ -41,8 +41,8 @@ pub fn write64bits_dram(pa_addr: u64, value: u64) {
 }
 
 pub fn write_inst_dram(pa_addr: u64, str: &str) {
-    // 一条指令占据c0个空间即24个bytes
-    for i in 0..24 {
+    // 一条指令占据40个空间即40个bytes
+    for i in 0..40 {
         if i < str.len() {
             let char = str.as_bytes()[i];
             // println!("{}",char);
@@ -59,7 +59,7 @@ pub fn write_inst_dram(pa_addr: u64, str: &str) {
 
 pub fn read_inst_dram(pa_addr: u64) -> Option<String> {
     let mut s = String::new();
-    for i in 0..24 {
+    for i in 0..40 {
         unsafe {
             let char = PM[pa_addr as usize + i] as char;
             s.push(char as char);
@@ -71,7 +71,7 @@ pub fn read_inst_dram(pa_addr: u64) -> Option<String> {
 // 将指令写入硬盘
 pub fn write_inst(insts: &Vec<&str>, pa: u64) {
     for num in 0..insts.len() {
-        write_inst_dram(va2pa(pa + (0xc0 * num) as u64).unwrap(), insts[num]);
+        write_inst_dram(va2pa(pa + (0x40 * num) as u64).unwrap(), insts[num]);
     }
 }
 
@@ -108,37 +108,89 @@ mod tests {
     #[test]
     fn test_write_inst(){
         let insts_vec = vec![
-            "push   %rbp             ",       // 0  0x5574d795f020
-            "mov    %rsp,%rbp        ",       // 1  0x5574d795f0e0
-            "mov    %rdi,-0x18(%rbp) ",       // 2  0x5574d795f1a0
-            "mov    %rsi,-0x20(%rbp) ",       // 3  0x5574D795F260
-            "mov    -0x18(%rbp),%rdx ",       // 4  0x5574D795F320
-            "mov    -0x20(%rbp),%rax ",       // 5  0x5574d795f3e0
-            "add    %rdx,%rax        ",       // 6  0x5574D795F4A0
-            "mov    %rax,-0x8(%rbp)  ",       // 7  0x5574D795F560
-            "mov    -0x8(%rbp),%rax  ",       // 8  0x5574D795F620
-            "pop    %rbp             ",       // 9  0x5574D795F6E0
-            "retq                    ",       // 10 0x5574D795F7A0
-            "mov    %rdx,%rsi        ",       // 11 0x5574d795f860  <= rip
-            "mov    %rax,%rdi        ",       // 12 0x5574d795f920
-            "callq  $0x5574d795f020  ",       // 13 0x5574d795f9e0
-            "mov    %rax,-0x8(%rbp)  ",       // 14 0x5574d795faa0
+            "push   %rbp                             ",       // 0  0x5574d795f020
+            "mov    %rsp,%rbp                        ",       // 1  0x5574d795f060
+            "mov    %rdi,-0x18(%rbp)                 ",       // 2  0x5574d795f0a0
+            "mov    %rsi,-0x20(%rbp)                 ",       // 3  0x5574d795f0e0
+            "mov    -0x18(%rbp),%rdx                 ",       // 4  0x5574d795f120
+            "mov    -0x20(%rbp),%rax                 ",       // 5  0x5574d795f160
+            "add    %rdx,%rax                        ",       // 6  0x5574d795f1a0
+            "mov    %rax,-0x8(%rbp)                  ",       // 7  0x5574d795f1e0
+            "mov    -0x8(%rbp),%rax                  ",       // 8  0x5574d795f220
+            "pop    %rbp                             ",       // 9  0x5574d795f260
+            "retq                                    ",       // 10 0x5574d795f2a0
+            "mov    %rdx,%rsi                        ",       // 11 0x5574d795f2e0  <= rip
+            "mov    %rax,%rdi                        ",       // 12 0x5574d795f320
+            "callq  $0x5574d795f020                  ",       // 13 0x5574d795f360
+            "mov    %rax,-0x8(%rbp)                  ",       // 14 0x5574d795f3a0
         ];
         write_inst(&insts_vec, 0x5574d795f020);
-        assert_eq!(insts_vec[0],read_inst_dram(va2pa(0x5574d795f020).unwrap()).unwrap());
-        assert_eq!(insts_vec[1],read_inst_dram(va2pa(0x5574d795f0e0).unwrap()).unwrap());
-        assert_eq!(insts_vec[2],read_inst_dram(va2pa(0x5574d795f1a0).unwrap()).unwrap());
-        assert_eq!(insts_vec[3],read_inst_dram(va2pa(0x5574D795F260).unwrap()).unwrap());
-        assert_eq!(insts_vec[4],read_inst_dram(va2pa(0x5574D795F320).unwrap()).unwrap());
-        assert_eq!(insts_vec[5],read_inst_dram(va2pa(0x5574d795f3e0).unwrap()).unwrap());
-        assert_eq!(insts_vec[6],read_inst_dram(va2pa(0x5574D795F4A0).unwrap()).unwrap());
-        assert_eq!(insts_vec[7],read_inst_dram(va2pa(0x5574D795F560).unwrap()).unwrap());
-        assert_eq!(insts_vec[8],read_inst_dram(va2pa(0x5574D795F620).unwrap()).unwrap());
-        assert_eq!(insts_vec[9],read_inst_dram(va2pa(0x5574D795F6E0).unwrap()).unwrap());
-        assert_eq!(insts_vec[10],read_inst_dram(va2pa(0x5574D795F7A0).unwrap()).unwrap());
-        assert_eq!(insts_vec[11],read_inst_dram(va2pa(0x5574d795f860).unwrap()).unwrap());
-        assert_eq!(insts_vec[12],read_inst_dram(va2pa(0x5574d795f920).unwrap()).unwrap());
-        assert_eq!(insts_vec[13],read_inst_dram(va2pa(0x5574d795f9e0).unwrap()).unwrap());
-        assert_eq!(insts_vec[14],read_inst_dram(va2pa(0x5574d795faa0).unwrap()).unwrap());
+        assert_eq!(insts_vec[1],read_inst_dram(va2pa(0x5574d795f060).unwrap()).unwrap());
+        assert_eq!(insts_vec[2],read_inst_dram(va2pa(0x5574d795f0a0).unwrap()).unwrap());
+        assert_eq!(insts_vec[3],read_inst_dram(va2pa(0x5574d795f0e0).unwrap()).unwrap());
+        assert_eq!(insts_vec[4],read_inst_dram(va2pa(0x5574d795f120).unwrap()).unwrap());
+        assert_eq!(insts_vec[5],read_inst_dram(va2pa(0x5574d795f160).unwrap()).unwrap());
+        assert_eq!(insts_vec[6],read_inst_dram(va2pa(0x5574d795f1a0).unwrap()).unwrap());
+        assert_eq!(insts_vec[7],read_inst_dram(va2pa(0x5574d795f1e0).unwrap()).unwrap());
+        assert_eq!(insts_vec[8],read_inst_dram(va2pa(0x5574d795f220).unwrap()).unwrap());
+        assert_eq!(insts_vec[9],read_inst_dram(va2pa(0x5574d795f260).unwrap()).unwrap());
+        assert_eq!(insts_vec[10],read_inst_dram(va2pa(0x5574d795f2a0).unwrap()).unwrap());
+        assert_eq!(insts_vec[11],read_inst_dram(va2pa(0x5574d795f2e0).unwrap()).unwrap());
+        assert_eq!(insts_vec[12],read_inst_dram(va2pa(0x5574d795f320).unwrap()).unwrap());
+        assert_eq!(insts_vec[13],read_inst_dram(va2pa(0x5574d795f360).unwrap()).unwrap());
+        assert_eq!(insts_vec[14],read_inst_dram(va2pa(0x5574d795f3a0).unwrap()).unwrap());
+    }
+
+    #[test]
+    fn test_inst_part2(){
+        let insts_vec = vec![
+            "push   %rbp                             ",   // 0  0x400000
+            "mov    %rsp,%rbp                        ",   // 1  0x400040
+            "sub    $0x10,%rsp                       ",   // 2  0x400080
+            "mov    %rdi,-0x8(%rbp)                  ",   // 3  0x4000c0
+            "cmpq   $0x0,-0x8(%rbp)                  ",   // 4  0x400100
+            "jne    0x400200                         ",   // 5: 0x400140 jump to 8
+            "mov    $0x0,%eax                        ",   // 6  0x400180
+            "jmp    0x400380                         ",   // 7: 0x4001c0 jump to 14
+            "mov    -0x8(%rbp),%rax                  ",   // 8  0x400200
+            "sub    $0x1,%rax                        ",   // 9  0x400240
+            "mov    %rax,%rdi                        ",   // 10 0x400280
+            "callq  0x00400000                       ",   // 11 0x4002c0
+            "mov    -0x8(%rbp),%rdx                  ",   // 12 0x400300
+            "add    %rdx,%rax                        ",   // 13 0x400340
+            "leaveq                                  ",   // 14 0x400380
+            "retq                                    ",   // 15 0x4003c0
+            "mov    $0x3,%edi                        ",   // 16 0x400400  rip
+            "callq  0x00400000                       ",   // 17 0x400440
+            "mov    %rax,-0x8(%rbp)                  ",   // 18 0x400480
+        ];
+        write_inst(&insts_vec, 0x400000);
+        assert_eq!(insts_vec[0],read_inst_dram(va2pa(0x400000).unwrap()).unwrap());
+        assert_eq!(insts_vec[1],read_inst_dram(va2pa(0x400040).unwrap()).unwrap());
+        assert_eq!(insts_vec[2],read_inst_dram(va2pa(0x400080).unwrap()).unwrap());
+        assert_eq!(insts_vec[3],read_inst_dram(va2pa(0x4000c0).unwrap()).unwrap());
+        assert_eq!(insts_vec[4],read_inst_dram(va2pa(0x400100).unwrap()).unwrap());
+        assert_eq!(insts_vec[5],read_inst_dram(va2pa(0x400140).unwrap()).unwrap());
+        assert_eq!(insts_vec[6],read_inst_dram(va2pa(0x400180).unwrap()).unwrap());
+        assert_eq!(insts_vec[7],read_inst_dram(va2pa(0x4001c0).unwrap()).unwrap());
+        assert_eq!(insts_vec[8],read_inst_dram(va2pa(0x400200).unwrap()).unwrap());
+        assert_eq!(insts_vec[9],read_inst_dram(va2pa(0x400240).unwrap()).unwrap());
+        assert_eq!(insts_vec[10],read_inst_dram(va2pa(0x400280).unwrap()).unwrap());
+        assert_eq!(insts_vec[11],read_inst_dram(va2pa(0x4002c0).unwrap()).unwrap());
+        assert_eq!(insts_vec[12],read_inst_dram(va2pa(0x400300).unwrap()).unwrap());
+        assert_eq!(insts_vec[13],read_inst_dram(va2pa(0x400340).unwrap()).unwrap());
+        assert_eq!(insts_vec[14],read_inst_dram(va2pa(0x400380).unwrap()).unwrap());
+        assert_eq!(insts_vec[15],read_inst_dram(va2pa(0x4003c0).unwrap()).unwrap());
+        assert_eq!(insts_vec[16],read_inst_dram(va2pa(0x400400).unwrap()).unwrap());
+        assert_eq!(insts_vec[17],read_inst_dram(va2pa(0x400440).unwrap()).unwrap());
+        assert_eq!(insts_vec[18],read_inst_dram(va2pa(0x400480).unwrap()).unwrap());
+    }
+
+    #[test]
+    fn te(){
+        let c:u64 = 0x5574d795f020;
+        for i in 0..19{
+            println!("0x{:x}",c+i*0x40);
+        }
     }
 }

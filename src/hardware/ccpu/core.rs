@@ -175,7 +175,13 @@ pub union RIP_REG {
     eip: u32,
 }
 
-
+#[repr(C)]
+pub struct CORE_FLAG {
+    pub cf: bool,
+    pub zf: bool,
+    pub sf: bool,
+    pub of: bool,
+}
 
 // core 里面保存和所有的寄存器，和符号信息,符号可以先不管
 pub struct Core {
@@ -196,6 +202,7 @@ pub struct Core {
     pub r14: R14_REG,
     pub r15: R15_REG,
     pub rip: RIP_REG,
+    pub flags: CORE_FLAG,
 }
 
 impl Core {
@@ -253,28 +260,33 @@ impl Core {
                 rip: 0x0000_0000_0000_0000,
             },
         );
-        unsafe {
-            Core {
-                rax: { regs.0 },
-                rbx: { regs.1 },
-                rcx: { regs.2 },
-                rdx: { regs.3 },
-                rsi: { regs.4 },
-                rdi: { regs.5 },
-                rbp: { regs.6 },
-                rsp: { regs.7 },
-                r8: { regs.8 },
-                r9: { regs.9 },
-                r10: { regs.10 },
-                r11: { regs.11 },
-                r12: { regs.12 },
-                r13: { regs.13 },
-                r14: { regs.14 },
-                r15: { regs.15 },
-                rip: { regs.16 },
-            }
+        Core {
+            rax: { regs.0 },
+            rbx: { regs.1 },
+            rcx: { regs.2 },
+            rdx: { regs.3 },
+            rsi: { regs.4 },
+            rdi: { regs.5 },
+            rbp: { regs.6 },
+            rsp: { regs.7 },
+            r8: { regs.8 },
+            r9: { regs.9 },
+            r10: { regs.10 },
+            r11: { regs.11 },
+            r12: { regs.12 },
+            r13: { regs.13 },
+            r14: { regs.14 },
+            r15: { regs.15 },
+            rip: { regs.16 },
+            flags : {
+                CORE_FLAG { cf: false, zf: false, sf: false, of: false }
+            },
         }
     }
+
+    /**
+     * update reg value
+     */
     pub fn update_reg(&mut self, od: &str, value: u64) {
         println!("update_reg {}", od);
         match od {
@@ -355,6 +367,7 @@ impl Core {
             _ => panic!("bad reg name"),
         }
     }
+    
     pub fn get_reg_value(&self, name: &str) -> Option<u64> {
         unsafe {
             match name {
@@ -432,21 +445,37 @@ impl Core {
                 "%r15b" => Some(self.r15.r15b as u64),
                 "%rip" => Some(self.rip.rip as u64),
                 "%eip" => Some(self.rip.eip as u64),
-                default => Some(0 as u64),
+                _default => Some(0 as u64),
             }
         }
     }
+    
+    /**
+     * printf all regs value for core
+     */
     pub fn get_all_reg_value(&self) {
         unsafe {
             println!("rax : {:x}, rbx: {:x} rcx {:x} \n rdx {:x} rsi {:x} rdi {:x} \n rbp {:x} rsp {:x},rip {:x}",
             self.rax.rax,self.rbx.rbx,self.rcx.rcx,self.rdx.rdx,self.rsi.rsi,self.rdi.rdi,self.rbp.rbp,self.rsp.rsp,self.rip.rip)
         }
     }
+
+    pub fn get_all_flags(&self){
+        println!("{},{},{},{}",self.flags.zf,self.flags.of,self.flags.cf,self.flags.sf)
+    }
+    /** 
+     * reset the core flags
+    */
+    pub fn flags_reset(&mut self){
+        self.flags.cf = false;
+        self.flags.zf = false;
+        self.flags.of = false;
+        self.flags.sf = false;
+    }
 }
 
-
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
     #[test]
     fn test() {
@@ -454,7 +483,7 @@ mod test{
             rax: 0x1234abcdff11ff11,
         };
         unsafe {
-            let e = f.eax;
+            let _e = f.eax;
         }
     }
     #[test]
@@ -472,5 +501,21 @@ mod test{
             assert_eq!(u1.inner.ah, 0xab);
             assert_eq!(u1.inner.al, 0xcd);
         };
+    }
+
+    #[test]
+    fn test_flag(){
+        let mut core = Core::new();
+        core.flags.cf = true;
+        core.flags.of = true;
+        assert_eq!(true,core.flags.cf);
+        assert_eq!(true,core.flags.of);
+        assert_eq!(false,core.flags.sf);
+        assert_eq!(false,core.flags.zf);
+        core.flags_reset();
+        assert_eq!(false,core.flags.cf);
+        assert_eq!(false,core.flags.of);
+        assert_eq!(false,core.flags.sf);
+        assert_eq!(false,core.flags.zf);
     }
 }
