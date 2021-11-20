@@ -132,7 +132,7 @@ fn hex_str2i(str: &str) -> i64 {
 }
 
 // 十六进制或者十进制字符串转u64
-fn hex_str2u(str: &str) -> u64 {
+pub fn hex_str2u(str: &str) -> u64 {
     if str.eq("") {
         return 0;
     }
