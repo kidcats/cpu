@@ -39,17 +39,16 @@ fn parse_sht(str: &str) -> sh_entry {
 }
 
 
-fn parse_symtab(str:&Vec<String>) -> st_entry{
+fn parse_symtab(str:Vec<&str>) -> st_entry{
     // ["sum,STB_GLOBAL,STT_FUNC,.text,0,22"]
-    println!("{:?}",str);
     let st_name = str[0].to_string();
-    let st_bind = match str[1].as_str() {
+    let st_bind = match str[1] {
         "STB_LOCAL" => StBind::StbLocal,
         "STB_GLOBAL" => StBind::StbGlobal,
         "STB_WEAK" => StBind::StbWeak,
         _default => panic!("bad stb bind ")
     };
-    let st_type = match str[2].as_str() {
+    let st_type = match str[2] {
         "STT_FUNC" => StType::SttFunc,
         "STT_OBJECT" => StType::SttObject,
         "STT_NOTYPE" => StType::SttNotype,
@@ -90,11 +89,10 @@ mod tests{
             match i.sh_name.as_str() {
                 ".symtab" => {
                     // add all st_entry
-                    for j in 1..i.sh_size + 1{
+                    for j in 0..i.sh_size {
                         let offset = i.sh_offset as usize;
-                        println!("{}",offset);
-                        let symtab_str  = &text_strs[offset..offset+j as usize];
-                        symtab.push(parse_symtab());
+                        let symtab_str : Vec<&str>  = text_strs[offset+j as usize].split(",").collect();
+                        symtab.push(parse_symtab(symtab_str));
                     }
                 },
                 ".text" =>  println!("to do"),
