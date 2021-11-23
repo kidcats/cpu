@@ -15,18 +15,21 @@ impl sh_entry {
     }
 }
 
+#[derive(Debug)]
 pub enum StBind {
     StbLocal,
     StbGlobal,
     StbWeak,
 }
 
+#[derive(Debug)]
 pub enum StType {
     SttNotype,
     SttObject,
     SttFunc,
 }
 
+#[derive(Debug)]
 pub struct st_entry {
     pub st_name: String,
     pub st_bind: StBind,
@@ -37,7 +40,7 @@ pub struct st_entry {
 }
 
 impl st_entry {
-    fn new(
+    pub fn new(
         st_name: String,
         st_bind: StBind,
         st_type: StType,
@@ -56,12 +59,14 @@ impl st_entry {
     }
 }
 
+#[derive(Debug)]
 pub enum RelType {
     RX86_64_32,
     RX86_64Pc32,
     RX86_64Plt32,
 }
 
+#[derive(Debug)]
 pub struct rl_entry {
     pub r_row: u64,
     pub r_col: u64,
@@ -70,6 +75,7 @@ pub struct rl_entry {
     pub r_addend: i64,
 }
 
+#[derive(Debug)]
 pub struct elf {
     pub buffer: String,
     pub line_count: u64,

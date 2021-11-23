@@ -39,10 +39,26 @@ fn parse_sht(str: &str) -> sh_entry {
 }
 
 
-fn parse_symtab(entry : &sh_entry,str:&Vec<String>) -> st_entry{
-    
-    todo!()
-
+fn parse_symtab(str:&Vec<String>) -> st_entry{
+    // ["sum,STB_GLOBAL,STT_FUNC,.text,0,22"]
+    println!("{:?}",str);
+    let st_name = str[0].to_string();
+    let st_bind = match str[1].as_str() {
+        "STB_LOCAL" => StBind::StbLocal,
+        "STB_GLOBAL" => StBind::StbGlobal,
+        "STB_WEAK" => StBind::StbWeak,
+        _default => panic!("bad stb bind ")
+    };
+    let st_type = match str[2].as_str() {
+        "STT_FUNC" => StType::SttFunc,
+        "STT_OBJECT" => StType::SttObject,
+        "STT_NOTYPE" => StType::SttNotype,
+        _default => panic!("bad stb type")
+    };
+    let st_shndx = str[3].to_string();
+    let st_value = str[4].parse::<u64>().unwrap();
+    let st_size = str[5].parse::<u64>().unwrap();
+    st_entry::new(st_name, st_bind, st_type, st_shndx, st_value, st_size)
 }
 
 #[cfg(test)]
@@ -69,16 +85,32 @@ mod tests{
             sht.push(sh_entry);
         }
         // 下面处理每一个section数据
+        let mut symtab : Vec<st_entry> = vec![];
         for i in sht{
             match i.sh_name.as_str() {
-                ".symtab" => {},
-                ".text" => {},
-                ".rel.text" => {},
-                _default => todo!()
+                ".symtab" => {
+                    // add all st_entry
+                    for j in 1..i.sh_size + 1{
+                        let offset = i.sh_offset as usize;
+                        println!("{}",offset);
+                        let symtab_str  = &text_strs[offset..offset+j as usize];
+                        symtab.push(parse_symtab());
+                    }
+                },
+                ".text" =>  println!("to do"),
+                ".rel.text" => println!("to do"),
+                _default => println!("to do")
             }
         }
+        println!("{:?}",symtab);
 
         
+    }
+
+    #[test]
+    fn do_hello(){
+        let v = vec![1,2,3];
+        println!("{:?}",v[1..2].to_vec());
     }
 
     #[test]
