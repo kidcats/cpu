@@ -75,6 +75,12 @@ pub struct rl_entry {
     pub r_addend: i64,
 }
 
+impl rl_entry {
+    pub fn new(r_row : u64,r_col:u64,rel_type : RelType,sym:u32,r_addend:i64) -> Self{
+        rl_entry { r_row: r_row, r_col: r_col, rel_type: rel_type, sym: sym, r_addend: r_addend }
+    }
+}
+
 #[derive(Debug)]
 pub struct elf {
     pub buffer: String,

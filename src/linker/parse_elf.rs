@@ -60,6 +60,21 @@ fn parse_symtab(str:Vec<&str>) -> st_entry{
     st_entry::new(st_name, st_bind, st_type, st_shndx, st_value, st_size)
 }
 
+fn parse_rl(str : Vec<&str>) -> rl_entry{
+    // 17,7,R_X86_64_PC32,1,-4 
+    let r_row = str[0].parse::<u64>().unwrap();
+    let r_col = str[1].parse::<u64>().unwrap();
+    let rel_type = match str[2] {
+        "R_X86_64_32" => RelType::RX86_64_32,
+        "R_X86_64_PC32" => RelType::RX86_64Pc32,
+        "R_X86_64_PLT_32" => RelType::RX86_64Plt32,
+        _ => panic!("bad str in rel_type"),
+    };
+    let sym = str[3].parse::<u32>().unwrap();
+    let r_addend = str[4].trim_end_matches(" ").parse::<i64>().unwrap();
+    rl_entry::new(r_row, r_col, rel_type, sym, r_addend)
+}
+
 #[cfg(test)]
 mod tests{
     use std::default;
@@ -85,6 +100,7 @@ mod tests{
         }
         // 下面处理每一个section数据
         let mut symtab : Vec<st_entry> = vec![];
+        let mut rl_tab : Vec<rl_entry> = vec![];
         for i in sht{
             match i.sh_name.as_str() {
                 ".symtab" => {
@@ -96,19 +112,26 @@ mod tests{
                     }
                 },
                 ".text" =>  println!("to do"),
-                ".rel.text" => println!("to do"),
-                _default => println!("to do")
+                ".rel.text" => {
+                    for j in 0..i.sh_size{
+                        let offset = i.sh_offset as usize;
+                        let rl_str : Vec<&str> = text_strs[offset+j as usize].split(",").collect();
+                        println!("{:?}",rl_str);
+                        rl_tab.push(parse_rl(rl_str));
+                    }
+                },
+             _ => println!("to do")
             }
         }
-        println!("{:?}",symtab);
+        println!("{:?}",rl_tab);
 
         
     }
 
     #[test]
     fn do_hello(){
-        let v = vec![1,2,3];
-        println!("{:?}",v[1..2].to_vec());
+        let v = "-4     ".trim_end_matches(" ");
+        println!("{:?}",v.parse::<i64>().unwrap());
     }
 
     #[test]
