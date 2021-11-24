@@ -79,7 +79,7 @@ fn parse_rl(str : Vec<&str>) -> rl_entry{
 mod tests{
     use std::default;
 
-    use crate::linker::parse_elf::*;
+    use crate::linker::{elf_struct, parse_elf::*};
     // use crate::linker::elf_struct::*;
 
 
@@ -90,7 +90,7 @@ mod tests{
         let mut text_strs : Vec<String> = vec![];
         read_line(s,&mut text_strs);
         assert_eq!(text_strs[0],text_strs.len().to_string());
-        let _line_count = text_strs[0].parse::<u64>().unwrap();
+        let line_count = text_strs[0].parse::<u64>().unwrap();
         let sht_count = text_strs[1].parse::<u64>().unwrap();
         // 即后面sht_count行都是section table
         let mut sht : Vec<sh_entry> = Vec::new();
@@ -101,7 +101,8 @@ mod tests{
         // 下面处理每一个section数据
         let mut symtab : Vec<st_entry> = vec![];
         let mut rl_tab : Vec<rl_entry> = vec![];
-        for i in sht{
+        let mut rl_data : Vec<rl_entry> = vec![];
+        for i in &sht{
             match i.sh_name.as_str() {
                 ".symtab" => {
                     // add all st_entry
@@ -111,7 +112,6 @@ mod tests{
                         symtab.push(parse_symtab(symtab_str));
                     }
                 },
-                ".text" =>  println!("to do"),
                 ".rel.text" => {
                     for j in 0..i.sh_size{
                         let offset = i.sh_offset as usize;
@@ -123,8 +123,19 @@ mod tests{
              _ => println!("to do")
             }
         }
-        println!("{:?}",rl_tab);
-
+        let mut sum_elf = elf::new(
+            text_strs,
+            line_count,
+            sht_count,
+            sht,
+            symtab.len(),
+            symtab,
+            rl_tab.len(),
+            rl_tab,
+            rl_data.len(),
+            rl_data
+        );
+        println!("{:?}",sum_elf);
         
     }
 

@@ -6,11 +6,12 @@ pub struct sh_entry {
     pub sh_size: u64,
 }
 impl sh_entry {
-    pub fn new(
-        sh_name: String, sh_addr: u64, sh_offset: u64, sh_size: u64
-    ) -> Self {
-        sh_entry { 
-            sh_name: sh_name, sh_addr: sh_addr, sh_offset: sh_offset, sh_size: sh_size 
+    pub fn new(sh_name: String, sh_addr: u64, sh_offset: u64, sh_size: u64) -> Self {
+        sh_entry {
+            sh_name: sh_name,
+            sh_addr: sh_addr,
+            sh_offset: sh_offset,
+            sh_size: sh_size,
         }
     }
 }
@@ -76,23 +77,38 @@ pub struct rl_entry {
 }
 
 impl rl_entry {
-    pub fn new(r_row : u64,r_col:u64,rel_type : RelType,sym:u32,r_addend:i64) -> Self{
-        rl_entry { r_row: r_row, r_col: r_col, rel_type: rel_type, sym: sym, r_addend: r_addend }
+    pub fn new(r_row: u64, r_col: u64, rel_type: RelType, sym: u32, r_addend: i64) -> Self {
+        rl_entry {
+            r_row: r_row,
+            r_col: r_col,
+            rel_type: rel_type,
+            sym: sym,
+            r_addend: r_addend,
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct elf {
-    pub buffer: String,
+    pub buffer: Vec<String>,
     pub line_count: u64,
     pub sht_count: u64,
-    pub sht: sh_entry,
-    pub symt_count: u64,
-    pub symt: st_entry,
-    pub rel_text_count: u64,
-    pub reltext: rl_entry,
-    pub rel_data_count: u64,
-    pub rel_data: rl_entry,
+    pub sht: Vec<sh_entry>,
+    pub symt_count: usize,
+    pub symt: Vec<st_entry>,
+    pub rel_text_count: usize,
+    pub reltext: Vec<rl_entry>,
+    pub rel_data_count: usize,
+    pub rel_data: Vec<rl_entry>,
+}
+
+impl elf {
+    pub fn new(buffer:Vec<String>,line_count:u64,
+        sht_count: u64,sht: Vec<sh_entry>,symt_count: usize,
+        symt: Vec<st_entry>,rel_text_count: usize,reltext: Vec<rl_entry>,
+        rel_data_count: usize,rel_data: Vec<rl_entry>) -> Self{
+        elf { buffer: buffer, line_count: line_count, sht_count: sht_count, sht: sht, symt_count: symt_count, symt: symt, rel_text_count: rel_text_count, reltext: reltext, rel_data_count: rel_data_count, rel_data: rel_data }
+    }
 }
 
 #[cfg(test)]
