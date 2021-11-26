@@ -1,11 +1,12 @@
 
-pub struct  address {
+pub struct  pa_address {
     address_value : u64
 }
 
-impl address {
+impl pa_address {
+
     pub fn new(value : u64) -> Self{
-        address { address_value: value }
+        pa_address { address_value: value }
     }
     pub fn paddr_value(&self) -> u64{
         return self.address_value & 0xfffffffffffff ;
@@ -35,7 +36,7 @@ mod tests{
     #[test]
     fn do_test(){
         println!("hello world");
-        let _c = address::new(0xffffabcdffffabcd);
+        let _c = pa_address::new(0xffffabcdffffabcd);
         assert_eq!(_c.address_value,0xffffabcdffffabcd);
         assert_eq!(_c.ppo(),0xbcd);
         assert_eq!(_c.ppn(),0xfabcdffffa);
