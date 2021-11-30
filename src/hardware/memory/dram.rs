@@ -1,7 +1,8 @@
 use std::char;
 
 use crate::hardware::ccpu::mmu::va2pa;
-pub const PHYSICAL_MEMORY_SPACE: usize = 40000;
+pub const PHYSICAL_MEMORY_SPACE: usize = 65535;
+pub const PHYSICAL_MEMORY_PAGE_NUM : usize = 15;
 pub static mut PM: [u8; PHYSICAL_MEMORY_SPACE] = [0; PHYSICAL_MEMORY_SPACE];
 
 /**

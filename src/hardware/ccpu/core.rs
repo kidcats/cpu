@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use super::pte::{pte_123,pte_4};
+
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct RAX_Inner {
@@ -183,6 +186,10 @@ pub struct CORE_FLAG {
     pub of: bool,
 }
 
+pub struct core_control {
+    pub cr3: u64,
+}
+
 // core 里面保存和所有的寄存器，和符号信息,符号可以先不管
 pub struct Core {
     pub rax: RAX_REG,
@@ -203,6 +210,11 @@ pub struct Core {
     pub r15: R15_REG,
     pub rip: RIP_REG,
     pub flags: CORE_FLAG,
+    pub cr: core_control,
+    pub l1_pte : HashMap<u64,pte_123>,// 前一个是tag,后一个是l2_pte的base_addr
+    pub l2_pte : HashMap<u64,pte_123>,// 前一个是tag,后一个是l2_pte的base_addr
+    pub l3_pte : HashMap<u64,pte_123>,// 前一个是tag,后一个是l2_pte的base_addr
+    pub l4_pte : HashMap<u64,pte_4>,// 前一个是tag,后一个是l2_pte的base_addr
 }
 
 impl Core {
@@ -260,6 +272,9 @@ impl Core {
                 rip: 0x0000_0000_0000_0000,
             },
         );
+
+
+
         Core {
             rax: { regs.0 },
             rbx: { regs.1 },
@@ -278,9 +293,19 @@ impl Core {
             r14: { regs.14 },
             r15: { regs.15 },
             rip: { regs.16 },
-            flags : {
-                CORE_FLAG { cf: false, zf: false, sf: false, of: false }
+            flags: {
+                CORE_FLAG {
+                    cf: false,
+                    zf: false,
+                    sf: false,
+                    of: false,
+                }
             },
+            cr: { core_control { cr3: 0x100 } },
+            l1_pte : HashMap::new(),
+            l2_pte : HashMap::new(),
+            l3_pte : HashMap::new(),
+            l4_pte : HashMap::new(),
         }
     }
 
@@ -367,7 +392,7 @@ impl Core {
             _ => panic!("bad reg name"),
         }
     }
-    
+
     pub fn get_reg_value(&self, name: &str) -> Option<u64> {
         unsafe {
             match name {
@@ -449,7 +474,7 @@ impl Core {
             }
         }
     }
-    
+
     /**
      * printf all regs value for core
      */
@@ -460,13 +485,16 @@ impl Core {
         }
     }
 
-    pub fn get_all_flags(&self){
-        println!("{},{},{},{}",self.flags.zf,self.flags.of,self.flags.cf,self.flags.sf)
+    pub fn get_all_flags(&self) {
+        println!(
+            "{},{},{},{}",
+            self.flags.zf, self.flags.of, self.flags.cf, self.flags.sf
+        )
     }
-    /** 
+    /**
      * reset the core flags
-    */
-    pub fn flags_reset(&mut self){
+     */
+    pub fn flags_reset(&mut self) {
         self.flags.cf = false;
         self.flags.zf = false;
         self.flags.of = false;
@@ -504,18 +532,18 @@ mod test {
     }
 
     #[test]
-    fn test_flag(){
+    fn test_flag() {
         let mut core = Core::new();
         core.flags.cf = true;
         core.flags.of = true;
-        assert_eq!(true,core.flags.cf);
-        assert_eq!(true,core.flags.of);
-        assert_eq!(false,core.flags.sf);
-        assert_eq!(false,core.flags.zf);
+        assert_eq!(true, core.flags.cf);
+        assert_eq!(true, core.flags.of);
+        assert_eq!(false, core.flags.sf);
+        assert_eq!(false, core.flags.zf);
         core.flags_reset();
-        assert_eq!(false,core.flags.cf);
-        assert_eq!(false,core.flags.of);
-        assert_eq!(false,core.flags.sf);
-        assert_eq!(false,core.flags.zf);
+        assert_eq!(false, core.flags.cf);
+        assert_eq!(false, core.flags.of);
+        assert_eq!(false, core.flags.sf);
+        assert_eq!(false, core.flags.zf);
     }
 }
